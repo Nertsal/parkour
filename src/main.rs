@@ -1,8 +1,14 @@
 use geng::prelude::*;
 
 mod game;
+mod logic;
+mod model;
+mod physics;
+mod render;
 
-use game::Game;
+use game::*;
+use model::*;
+use render::Render;
 
 #[derive(geng::Assets)]
 pub struct Assets {}
@@ -15,6 +21,8 @@ fn main() {
         title: "Untitled Parkour Game".to_owned(),
         ..default()
     });
+
+    geng.window().lock_cursor();
 
     geng::run(
         &geng,
