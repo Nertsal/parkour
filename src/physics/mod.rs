@@ -4,6 +4,7 @@ mod body;
 
 pub use body::*;
 
+#[derive(Debug, Clone, Copy)]
 pub struct PhysicsPoint {
     pub position: Position,
     pub radius: Coord,
@@ -16,6 +17,14 @@ impl PhysicsPoint {
             velocity: Velocity::ZERO,
             position,
             radius,
+        }
+    }
+
+    pub fn relative(&self, other: &Self) -> Self {
+        Self {
+            position: self.position + other.position,
+            velocity: self.velocity + other.velocity,
+            radius: self.radius,
         }
     }
 }

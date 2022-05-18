@@ -12,7 +12,6 @@ pub struct Model {
 }
 
 pub struct Player {
-    pub hand_target_delta: Position,
     pub body: Body,
 }
 
@@ -27,7 +26,6 @@ impl Model {
 impl Player {
     pub fn new(position: Position) -> Self {
         Self {
-            hand_target_delta: Position::ZERO,
             body: Body::new(position),
         }
     }

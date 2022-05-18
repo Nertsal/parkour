@@ -31,7 +31,6 @@ impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::MouseMove { delta, .. } => {
-                dbg!(delta);
                 let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
                 self.player_control.hand_target_delta += delta;
             }

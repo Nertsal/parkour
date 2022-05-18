@@ -29,7 +29,7 @@ impl Render {
 
     fn draw_body(&self, body: &Body, framebuffer: &mut ugli::Framebuffer) {
         self.draw_point(&body.center, Color::GRAY, framebuffer);
-        self.draw_point(&body.hand, Color::WHITE, framebuffer);
+        self.draw_point(&body.absolute_hand(), Color::WHITE, framebuffer);
     }
 
     fn draw_point(
