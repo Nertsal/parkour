@@ -5,6 +5,7 @@ mod collision;
 use physics::*;
 
 const MAX_HAND_SPEED: f32 = 20.0;
+const GRAVITY: Vec2<f32> = vec2(0.0, -9.8);
 
 pub struct Logic<'a> {
     pub model: &'a mut Model,
@@ -26,11 +27,16 @@ impl Model {
 impl<'a> Logic<'a> {
     pub fn process(mut self) {
         self.player_control();
+        self.gravity();
         self.movement();
         self.collision();
     }
 
     fn player_control(&mut self) {}
+
+    fn gravity(&mut self) {
+        self.model.player.body.center.velocity += GRAVITY.map(|x| Coord::new(x)) * self.delta_time;
+    }
 
     fn movement(&mut self) {
         self.model
