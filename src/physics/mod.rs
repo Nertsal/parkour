@@ -9,14 +9,16 @@ pub struct PhysicsPoint {
     pub position: Position,
     pub radius: Coord,
     pub velocity: Velocity,
+    pub mass: Mass,
 }
 
 impl PhysicsPoint {
-    pub fn new(position: Position, radius: Coord) -> Self {
+    pub fn new(position: Position, radius: Coord, mass: Mass) -> Self {
         Self {
             velocity: Velocity::ZERO,
             position,
             radius,
+            mass,
         }
     }
 
@@ -24,7 +26,7 @@ impl PhysicsPoint {
         Self {
             position: self.position + other.position,
             velocity: self.velocity + other.velocity,
-            radius: self.radius,
+            ..*self
         }
     }
 }

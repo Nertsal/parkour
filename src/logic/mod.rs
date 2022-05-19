@@ -32,26 +32,39 @@ impl<'a> Logic<'a> {
         self.collision();
     }
 
-    fn player_control(&mut self) {}
+    fn player_control(&mut self) {
+        self.model
+            .player
+            .shift_target(self.player_control.hand_target_delta);
+    }
 
     fn gravity(&mut self) {
         self.model.player.body.center.velocity += GRAVITY.map(|x| Coord::new(x)) * self.delta_time;
     }
 
     fn movement(&mut self) {
-        self.model
-            .player
-            .body
-            .shift_hand(self.player_control.hand_target_delta, self.delta_time);
+        self.model.player.move_hand(self.delta_time);
     }
 }
 
 impl Body {
-    fn shift_hand(&mut self, delta: Position, delta_time: Time) {
+    fn move_hand_towards(&mut self, relative_target: Position, delta_time: Time) {
         let max_speed = Coord::new(MAX_HAND_SPEED) * delta_time;
+        let delta = relative_target - self.relative_hand.position;
         let delta = delta.clamp_len(..=max_speed);
         let target = self.relative_hand.position + delta;
         let target = target.clamp_len(..=self.hand_length);
         self.relative_hand.position = target;
+    }
+}
+
+impl Player {
+    fn shift_target(&mut self, delta: Position) {
+        self.relative_target = (self.relative_target + delta).clamp_len(..=self.body.hand_length);
+    }
+
+    fn move_hand(&mut self, delta_time: Time) {
+        self.body
+            .move_hand_towards(self.relative_target, delta_time);
     }
 }

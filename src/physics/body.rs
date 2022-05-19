@@ -9,8 +9,8 @@ pub struct Body {
 impl Body {
     pub fn new(position: Position) -> Self {
         Self {
-            center: PhysicsPoint::new(position, Coord::new(1.0)),
-            relative_hand: PhysicsPoint::new(position, Coord::new(1.0)),
+            center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(2.0)),
+            relative_hand: PhysicsPoint::new(position, Coord::new(0.5), Mass::new(1.0)),
             hand_length: Coord::new(2.0),
         }
     }

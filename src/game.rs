@@ -1,6 +1,6 @@
 use super::*;
 
-const MOUSE_SENSITIVITY: f32 = 1.0;
+const MOUSE_SENSITIVITY: f32 = 0.01;
 
 pub struct Game {
     pub render: Render,
