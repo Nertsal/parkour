@@ -2,9 +2,6 @@ use super::*;
 
 mod collision;
 
-use physics::*;
-
-const MAX_HAND_SPEED: f32 = 20.0;
 const GRAVITY: Vec2<f32> = vec2(0.0, -9.8);
 
 pub struct Logic<'a> {
@@ -44,17 +41,6 @@ impl<'a> Logic<'a> {
 
     fn movement(&mut self) {
         self.model.player.move_hand(self.delta_time);
-    }
-}
-
-impl Body {
-    fn move_hand_towards(&mut self, relative_target: Position, delta_time: Time) {
-        let max_speed = Coord::new(MAX_HAND_SPEED) * delta_time;
-        let delta = relative_target - self.relative_hand.position;
-        let delta = delta.clamp_len(..=max_speed);
-        let target = self.relative_hand.position + delta;
-        let target = target.clamp_len(..=self.hand_length);
-        self.relative_hand.position = target;
     }
 }
 
