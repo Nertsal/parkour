@@ -6,6 +6,7 @@ pub type Time = R32;
 pub type Coord = R32;
 pub type Position = Vec2<Coord>;
 pub type Velocity = Vec2<Coord>;
+pub type Impulse = Vec2<Coord>;
 pub type Mass = R32;
 
 pub struct Model {

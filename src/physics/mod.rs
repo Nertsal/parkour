@@ -29,4 +29,8 @@ impl PhysicsPoint {
             ..*self
         }
     }
+
+    pub fn impulse(&self) -> Impulse {
+        self.velocity * self.mass
+    }
 }

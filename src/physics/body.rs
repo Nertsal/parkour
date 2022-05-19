@@ -42,7 +42,8 @@ impl Body {
             if len > self.hand_length {
                 // Stop hand
                 target = target / len * self.hand_length;
-                // TODO
+                self.center.velocity += self.relative_hand.impulse() / self.center.mass;
+                self.relative_hand.velocity = Velocity::ZERO;
             }
             self.relative_hand.position = target;
         }
