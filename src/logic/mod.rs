@@ -46,7 +46,8 @@ impl<'a> Logic<'a> {
 
 impl Player {
     fn shift_target(&mut self, delta: Position) {
-        self.relative_target = (self.relative_target + delta).clamp_len(..=self.body.hand_length);
+        let max_distance = self.body.hand_length + self.body.relative_hand.radius;
+        self.relative_target = (self.relative_target + delta).clamp_len(..=max_distance);
     }
 
     fn move_hand(&mut self, delta_time: Time) {
