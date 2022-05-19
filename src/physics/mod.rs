@@ -22,6 +22,10 @@ impl PhysicsPoint {
         }
     }
 
+    pub fn movement(&mut self, delta_time: Time) {
+        self.position += self.velocity * delta_time;
+    }
+
     pub fn relative(&self, other: &Self) -> Self {
         Self {
             position: self.position + other.position,

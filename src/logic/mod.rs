@@ -41,12 +41,13 @@ impl<'a> Logic<'a> {
 
     fn movement(&mut self) {
         self.model.player.move_hand(self.delta_time);
+        self.model.player.body.center.movement(self.delta_time);
     }
 }
 
 impl Player {
     fn shift_target(&mut self, delta: Position) {
-        let max_distance = self.body.hand_length + self.body.relative_hand.radius;
+        let max_distance = self.body.hand_length;
         self.relative_target = (self.relative_target + delta).clamp_len(..=max_distance);
     }
 
