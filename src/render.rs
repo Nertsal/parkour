@@ -4,7 +4,7 @@ use super::*;
 
 use physics::*;
 
-const HAND_TARGET_COLOR: Color<f32> = Color {
+const HAND_TARGET_COLOR: Rgba<f32> = Rgba {
     r: 0.7,
     g: 0.7,
     b: 0.7,
@@ -45,19 +45,19 @@ impl Render {
         self.draw_point(
             body.center.position,
             body.center.radius,
-            Color::GRAY,
+            Rgba::GRAY,
             framebuffer,
         );
 
         let hand = body.absolute_hand();
-        self.draw_point(hand.position, hand.radius, Color::WHITE, framebuffer);
+        self.draw_point(hand.position, hand.radius, Rgba::WHITE, framebuffer);
     }
 
     fn draw_point(
         &self,
         position: Position,
         radius: Coord,
-        color: Color<f32>,
+        color: Rgba<f32>,
         framebuffer: &mut ugli::Framebuffer,
     ) {
         draw_2d::Ellipse::circle_with_cut(
