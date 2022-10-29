@@ -33,10 +33,13 @@ impl<'a> Logic<'a> {
         self.model
             .player
             .shift_target(self.player_control.hand_target_delta);
+        if self.player_control.jump {
+            self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new);
+        }
     }
 
     fn gravity(&mut self) {
-        self.model.player.body.center.velocity += GRAVITY.map(|x| Coord::new(x)) * self.delta_time;
+        self.model.player.body.center.velocity += GRAVITY.map(Coord::new) * self.delta_time;
     }
 
     fn movement(&mut self) {
@@ -47,8 +50,8 @@ impl<'a> Logic<'a> {
 
 impl Player {
     fn shift_target(&mut self, delta: Position) {
-        let max_distance = self.body.hand_length;
-        self.relative_target = (self.relative_target + delta).clamp_len(..=max_distance);
+        self.relative_target =
+            (self.relative_target + delta).clamp_len(..=self.body.arm.max_reach() * r32(1.1));
     }
 
     fn move_hand(&mut self, delta_time: Time) {

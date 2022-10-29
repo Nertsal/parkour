@@ -10,6 +10,7 @@ pub struct Game {
 
 pub struct PlayerControl {
     pub hand_target_delta: Position,
+    pub jump: bool,
 }
 
 impl Game {
@@ -34,6 +35,11 @@ impl geng::State for Game {
                 let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
                 self.player_control.hand_target_delta += delta;
             }
+            geng::Event::KeyDown {
+                key: geng::Key::Space,
+            } => {
+                self.player_control.jump = true;
+            }
             _ => {}
         }
     }
@@ -48,6 +54,7 @@ impl Default for PlayerControl {
     fn default() -> Self {
         Self {
             hand_target_delta: Position::ZERO,
+            jump: false,
         }
     }
 }
