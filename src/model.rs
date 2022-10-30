@@ -31,4 +31,8 @@ impl Player {
             body: Body::new(position),
         }
     }
+
+    pub fn movement(&mut self, delta_time: Time) {
+        self.body.movement(self.relative_target, delta_time);
+    }
 }

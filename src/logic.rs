@@ -43,8 +43,7 @@ impl<'a> Logic<'a> {
     }
 
     fn movement(&mut self) {
-        self.model.player.move_hand(self.delta_time);
-        self.model.player.body.center.movement(self.delta_time);
+        self.model.player.movement(self.delta_time);
     }
 }
 
@@ -52,10 +51,5 @@ impl Player {
     fn shift_target(&mut self, delta: Position) {
         self.relative_target =
             (self.relative_target + delta).clamp_len(..=self.body.arm.max_reach() * r32(1.1));
-    }
-
-    fn move_hand(&mut self, delta_time: Time) {
-        self.body
-            .move_hand_towards(self.relative_target, delta_time);
     }
 }
