@@ -36,7 +36,7 @@ impl<'a> Logic<'a> {
         self.player_control();
         self.gravity();
         self.movement();
-        self.collision();
+        self.collisions();
     }
 
     fn player_control(&mut self) {

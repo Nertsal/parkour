@@ -3,9 +3,11 @@ use super::*;
 mod arm_skeleton;
 mod body;
 mod running;
+mod surface;
 
 pub use arm_skeleton::*;
 pub use body::*;
+pub use surface::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PhysicsPoint {

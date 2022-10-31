@@ -11,6 +11,7 @@ pub type Mass = R32;
 
 pub struct Model {
     pub player: Player,
+    pub surfaces: Vec<Surface>,
     pub best_jump: Option<Coord>,
 }
 
@@ -23,6 +24,7 @@ impl Model {
     pub fn new() -> Self {
         Self {
             player: Player::new(Position::ZERO),
+            surfaces: default(),
             best_jump: None,
         }
     }
