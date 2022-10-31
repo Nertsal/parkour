@@ -15,7 +15,6 @@ pub type Mass = R32;
 pub struct Model {
     pub player: Player,
     pub level: Level,
-    pub best_jump: Option<Coord>,
 }
 
 pub struct Player {
@@ -28,7 +27,6 @@ impl Model {
         Self {
             player: Player::new(level.spawn_point),
             level,
-            best_jump: None,
         }
     }
 }

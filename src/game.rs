@@ -1,5 +1,7 @@
 use super::*;
 
+const CAMERA_INTERPOLATION: f32 = 0.5;
+
 const MOUSE_SENSITIVITY: f32 = 0.005;
 
 const KEYS_MOVE_RIGHT: [geng::Key; 2] = [geng::Key::D, geng::Key::Right];
@@ -12,6 +14,7 @@ pub struct Game {
     pub model: Model,
     pub player_control: PlayerControl,
     toggle_editor: bool,
+    camera_target: Vec2<Coord>,
 }
 
 pub struct PlayerControl {
@@ -32,6 +35,7 @@ impl Game {
             model: Model::new(level),
             player_control: default(),
             toggle_editor: false,
+            camera_target: Vec2::ZERO,
         }
     }
 }
@@ -50,7 +54,6 @@ impl geng::State for Game {
             }
             geng::Event::KeyDown { key } => match key {
                 geng::Key::Space => self.player_control.jump = true,
-                geng::Key::R => self.model.best_jump = None,
                 geng::Key::T => self.toggle_editor = true,
                 _ => {}
             },
@@ -59,6 +62,9 @@ impl geng::State for Game {
     }
 
     fn update(&mut self, delta_time: f64) {
+        let delta_time = delta_time as f32;
+
+        // Update control
         let window = self.geng.window();
         let pressed =
             |keys: &[geng::Key]| -> bool { keys.iter().any(|&key| window.is_key_pressed(key)) };
@@ -73,8 +79,15 @@ impl geng::State for Game {
 
         self.player_control.hold = window.is_button_pressed(geng::MouseButton::Left);
 
+        // Update model
         self.model
-            .update(self.player_control.take(), Time::new(delta_time as _));
+            .update(self.player_control.take(), Time::new(delta_time));
+
+        // Update camera position
+        self.camera_target = self.model.player.body.center.position;
+        let delta = self.camera_target - self.render.camera.center.map(Coord::new);
+        self.render.camera.center +=
+            (delta * Coord::new(delta_time / CAMERA_INTERPOLATION)).map(Coord::as_f32);
     }
 
     fn transition(&mut self) -> Option<geng::Transition> {

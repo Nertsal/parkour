@@ -18,16 +18,6 @@ impl Model {
             player_control,
         };
         logic.process();
-
-        let height = self.player.body.center.position.y - self.player.body.center.radius;
-        match &mut self.best_jump {
-            None => self.best_jump = Some(height),
-            Some(best) => {
-                if height > *best {
-                    *best = height;
-                }
-            }
-        }
     }
 }
 

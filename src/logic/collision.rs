@@ -3,12 +3,6 @@ use crate::physics::*;
 
 impl Logic<'_> {
     pub fn collisions(&mut self) {
-        let point = &mut self.model.player.body.center;
-        if point.position.y < Coord::ZERO {
-            point.position.y = Coord::ZERO;
-            point.velocity.y = Coord::ZERO;
-        }
-
         self.model.player.body.collide(&self.model.level.surfaces);
     }
 }
