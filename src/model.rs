@@ -9,6 +9,7 @@ pub type Mass = R32;
 
 pub struct Model {
     pub player: Player,
+    pub best_jump: Option<Coord>,
 }
 
 pub struct Player {
@@ -20,6 +21,7 @@ impl Model {
     pub fn new() -> Self {
         Self {
             player: Player::new(Position::ZERO),
+            best_jump: None,
         }
     }
 }

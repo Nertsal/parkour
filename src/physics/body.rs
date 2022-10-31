@@ -24,6 +24,6 @@ impl Body {
 
     fn move_hand_towards(&mut self, relative_target: Position, delta_time: Time) {
         let impulse = self.arm.move_hand_towards(relative_target, delta_time);
-        self.center.velocity -= impulse / self.center.mass;
+        self.center.velocity -= impulse * r32(5.0) / self.center.mass;
     }
 }

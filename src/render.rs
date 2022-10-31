@@ -66,6 +66,34 @@ impl Render {
         // Hand target
         let hand_target = model.player.relative_target + model.player.body.center.position;
         self.draw_point(hand_target, Coord::new(0.3), HAND_TARGET_COLOR, framebuffer);
+
+        // Best jump
+        if let Some(height) = model.best_jump {
+            let height = height.as_f32();
+            let x = model.player.body.center.position.x.as_f32();
+            self.geng.draw_2d(
+                framebuffer,
+                &self.camera,
+                &draw_2d::Segment::new(
+                    Segment::new(vec2(x - 0.5, height), vec2(x + 0.5, height)),
+                    0.1,
+                    Rgba::WHITE,
+                ),
+            );
+
+            self.geng.draw_2d(
+                framebuffer,
+                &self.camera,
+                &draw_2d::Text::unit(
+                    &**self.geng.default_font(),
+                    format!("Best height: {:.2}", height),
+                    Rgba::WHITE,
+                )
+                .align_bounding_box(vec2(0.0, 0.0))
+                .scale_uniform(0.5)
+                .translate(vec2(x + 5.0, height + 3.0)),
+            );
+        }
     }
 
     fn draw_body(&self, body: &Body, framebuffer: &mut ugli::Framebuffer) {

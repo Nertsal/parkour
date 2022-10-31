@@ -35,11 +35,11 @@ impl geng::State for Game {
                 let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
                 self.player_control.hand_target_delta += delta;
             }
-            geng::Event::KeyDown {
-                key: geng::Key::Space,
-            } => {
-                self.player_control.jump = true;
-            }
+            geng::Event::KeyDown { key } => match key {
+                geng::Key::Space => self.player_control.jump = true,
+                geng::Key::R => self.model.best_jump = None,
+                _ => {}
+            },
             _ => {}
         }
     }
