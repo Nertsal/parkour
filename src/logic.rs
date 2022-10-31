@@ -2,7 +2,7 @@ use super::*;
 
 mod collision;
 
-const GRAVITY: Vec2<f32> = vec2(0.0, -9.8);
+const GRAVITY: Vec2<f32> = vec2(0.0, -5.8);
 
 pub struct Logic<'a> {
     pub model: &'a mut Model,
@@ -34,7 +34,8 @@ impl<'a> Logic<'a> {
             .player
             .shift_target(self.player_control.hand_target_delta);
         if self.player_control.jump {
-            self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new);
+            self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new)
+                + self.model.player.body.arm.impulse() / self.model.player.body.center.mass;
         }
     }
 

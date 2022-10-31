@@ -48,6 +48,17 @@ impl ArmSkeleton {
         self.elbow.point.distance + self.hand.point.distance
     }
 
+    pub fn impulse(&self) -> Vec2<Coord> {
+        let (sin, cos) = self.elbow.point.angle.0.sin_cos();
+        let elbow_speed = self.elbow.velocity * self.elbow.point.distance;
+        let elbow_impulse = vec2(cos, sin).rotate_90() * elbow_speed * self.elbow.mass;
+        let (sin, cos) = (self.elbow.point.angle + self.hand.point.angle).0.sin_cos();
+        let hand_impulse = vec2(cos, sin).rotate_90()
+            * (elbow_speed + self.hand.velocity * self.hand.point.distance)
+            * self.hand.mass;
+        elbow_impulse + hand_impulse
+    }
+
     /// The returns the skeleton in world coordinates as an array `[shoulder, elbow, hand]`.
     pub fn get_skeleton(&self, body: &PhysicsPoint) -> [PhysicsPoint; 3] {
         let shoulder = self.shoulder.relative(body);
