@@ -3,8 +3,7 @@ use super::*;
 const ELBOW_ACCELERATION: f32 = 20.0;
 const HAND_ACCELERATION: f32 = 10.0;
 const MAX_ANGULAR_VELOCITY: f32 = 10.0;
-const MAX_HOLD_FORCE: f32 = 10.0;
-const MAX_PULL_FORCE: f32 = 2.0;
+const MAX_HOLD_FORCE: f32 = 200.0;
 
 #[derive(Debug, Clone, Copy)]
 struct PolarPoint {
@@ -120,7 +119,7 @@ impl ArmSkeleton {
             self.elbow.point.angle += self.elbow.velocity * delta_time;
             self.hand.point.angle += self.hand.velocity * delta_time;
 
-            total_impulse += elbow_impulse + hand_impulse;
+            total_impulse += (elbow_impulse + hand_impulse) * r32(5.0);
         }
 
         // Check hold
@@ -129,21 +128,22 @@ impl ArmSkeleton {
             let mut force_left = Coord::new(MAX_HOLD_FORCE);
             if hold.len() > self.max_reach() {
                 let normal = hold.normalize_or_zero();
-                let impulse = Vec2::dot(body_impulse, normal);
-                // Add the force required to hold on
-                force_left -= impulse;
-                if force_left < Coord::ZERO {
-                    release = true;
-                } else {
-                    total_impulse += normal * impulse;
+                let impulse = Vec2::dot(-body_impulse, normal);
+                if impulse > Coord::ZERO {
+                    // Add the force required to hold on
+                    force_left -= impulse;
+                    if force_left < Coord::ZERO {
+                        release = true;
+                    } else {
+                        total_impulse -= normal * impulse;
+                    }
                 }
             }
 
             if !release {
                 // Pull towards target
                 let delta = target - hold;
-                total_impulse +=
-                    delta.normalize_or_zero() * force_left.min(Coord::new(MAX_PULL_FORCE));
+                total_impulse += delta.normalize_or_zero() * force_left * delta_time;
             }
         }
 

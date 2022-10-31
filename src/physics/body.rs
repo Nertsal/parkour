@@ -15,8 +15,8 @@ impl Body {
             center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(20.0)),
             arm: ArmSkeleton::new(
                 PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
-                PhysicsPoint::new(vec2(0.0, -0.45).map(r32), Coord::new(0.15), Mass::new(0.7)),
-                PhysicsPoint::new(vec2(0.0, -0.55).map(r32), Coord::new(0.2), Mass::new(1.0)),
+                PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),
+                PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),
             ),
             holding_to: None,
             history: default(),
@@ -58,7 +58,7 @@ impl Body {
         let (impulse, release) =
             self.arm
                 .control(relative_target, hold, self.center.impulse(), delta_time);
-        self.center.velocity -= impulse * r32(5.0) / self.center.mass;
+        self.center.velocity -= impulse / self.center.mass;
         if release {
             self.holding_to = None;
         } else if let Some(hold) = hold {
