@@ -64,7 +64,7 @@ impl Render {
         self.draw_body(&model.player.body, framebuffer);
 
         // Hand target
-        let hand_target = model.player.relative_target + model.player.body.center.position;
+        let hand_target = model.player.control.hand_target + model.player.body.center.position;
         self.draw_point(hand_target, Coord::new(0.3), HAND_TARGET_COLOR, framebuffer);
 
         // Best jump

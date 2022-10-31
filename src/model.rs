@@ -1,3 +1,5 @@
+use crate::control::*;
+
 use super::*;
 
 use physics::*;
@@ -13,7 +15,7 @@ pub struct Model {
 }
 
 pub struct Player {
-    pub relative_target: Position,
+    pub control: BodyControl,
     pub body: Body,
 }
 
@@ -29,12 +31,14 @@ impl Model {
 impl Player {
     pub fn new(position: Position) -> Self {
         Self {
-            relative_target: Position::ZERO,
+            control: default(),
             body: Body::new(position),
         }
     }
 
     pub fn movement(&mut self, delta_time: Time) {
-        self.body.movement(self.relative_target, delta_time);
+        let control = self.control.verify(&self.body);
+        self.control = control.into();
+        self.body.movement(control, delta_time);
     }
 }

@@ -1,5 +1,6 @@
 use geng::prelude::*;
 
+mod control;
 mod game;
 mod logic;
 mod model;

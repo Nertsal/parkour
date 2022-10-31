@@ -43,6 +43,7 @@ impl<'a> Logic<'a> {
         self.model
             .player
             .shift_target(self.player_control.hand_target_delta);
+        self.model.player.control.move_speed = self.player_control.move_speed;
         if self.player_control.jump {
             self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new)
                 + self.model.player.body.arm.impulse() / self.model.player.body.center.mass;
@@ -60,7 +61,6 @@ impl<'a> Logic<'a> {
 
 impl Player {
     fn shift_target(&mut self, delta: Position) {
-        self.relative_target =
-            (self.relative_target + delta).clamp_len(..=self.body.arm.max_reach() * r32(1.1));
+        self.control.hand_target = self.control.hand_target + delta
     }
 }

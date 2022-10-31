@@ -2,6 +2,7 @@ use super::*;
 
 mod arm_skeleton;
 mod body;
+mod running;
 
 pub use arm_skeleton::*;
 pub use body::*;

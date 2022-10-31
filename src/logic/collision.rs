@@ -5,7 +5,7 @@ impl Logic<'_> {
         let point = &mut self.model.player.body.center;
         if point.position.y < Coord::ZERO {
             point.position.y = Coord::ZERO;
-            point.velocity = Vec2::ZERO;
+            point.velocity.y = Coord::ZERO;
         }
     }
 }
