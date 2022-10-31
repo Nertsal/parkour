@@ -32,7 +32,7 @@ const HAND_COLOR: Rgba<f32> = Rgba {
 pub struct Render {
     geng: Geng,
     assets: Rc<Assets>,
-    camera: Camera2d,
+    pub camera: Camera2d,
 }
 
 impl Render {
@@ -49,6 +49,9 @@ impl Render {
     }
 
     pub fn draw(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+        // Level
+        self.draw_level(&model.level, framebuffer);
+
         // Ground
         self.geng.draw_2d(
             framebuffer,
@@ -115,6 +118,16 @@ impl Render {
         );
         self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
         self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
+    }
+
+    pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
+        for surface in &level.surfaces {
+            self.geng.draw_2d(
+                framebuffer,
+                &self.camera,
+                &draw_2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
+            );
+        }
     }
 
     fn draw_point(

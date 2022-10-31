@@ -7,9 +7,11 @@ const MOVE_LEFT: [geng::Key; 2] = [geng::Key::A, geng::Key::Left];
 
 pub struct Game {
     geng: Geng,
+    assets: Rc<Assets>,
     pub render: Render,
     pub model: Model,
     pub player_control: PlayerControl,
+    toggle_editor: bool,
 }
 
 pub struct PlayerControl {
@@ -20,11 +22,15 @@ pub struct PlayerControl {
 
 impl Game {
     pub fn new(geng: &Geng, assets: &Rc<Assets>) -> Self {
+        geng.window().lock_cursor();
+        let level = Level::load(static_path().join("new_level.json")).unwrap_or_default();
         Self {
             geng: geng.clone(),
+            assets: assets.clone(),
             render: Render::new(geng, assets),
-            model: Model::new(),
+            model: Model::new(level),
             player_control: default(),
+            toggle_editor: false,
         }
     }
 }
@@ -44,6 +50,7 @@ impl geng::State for Game {
             geng::Event::KeyDown { key } => match key {
                 geng::Key::Space => self.player_control.jump = true,
                 geng::Key::R => self.model.best_jump = None,
+                geng::Key::T => self.toggle_editor = true,
                 _ => {}
             },
             _ => {}
@@ -65,6 +72,15 @@ impl geng::State for Game {
 
         self.model
             .update(self.player_control.take(), Time::new(delta_time as _));
+    }
+
+    fn transition(&mut self) -> Option<geng::Transition> {
+        self.toggle_editor.then(|| {
+            geng::Transition::Switch(Box::new(crate::editor::Editor::new(
+                &self.geng,
+                &self.assets,
+            )))
+        })
     }
 }
 

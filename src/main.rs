@@ -1,6 +1,7 @@
 use geng::prelude::*;
 
 mod control;
+mod editor;
 mod game;
 mod logic;
 mod model;
@@ -22,8 +23,6 @@ fn main() {
         title: "Untitled Parkour Game".to_owned(),
         ..default()
     });
-
-    geng.window().lock_cursor();
 
     geng::run(
         &geng,

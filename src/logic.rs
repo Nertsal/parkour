@@ -61,6 +61,6 @@ impl<'a> Logic<'a> {
 
 impl Player {
     fn shift_target(&mut self, delta: Position) {
-        self.control.hand_target = self.control.hand_target + delta
+        self.control.hand_target += delta
     }
 }

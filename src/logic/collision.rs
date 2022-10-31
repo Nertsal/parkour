@@ -9,7 +9,7 @@ impl Logic<'_> {
             point.velocity.y = Coord::ZERO;
         }
 
-        self.model.player.body.collide(&self.model.surfaces);
+        self.model.player.body.collide(&self.model.level.surfaces);
     }
 }
 

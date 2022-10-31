@@ -1,8 +1,11 @@
 use crate::control::*;
+use crate::physics::*;
 
 use super::*;
 
-use physics::*;
+mod level;
+
+pub use level::*;
 
 pub type Time = R32;
 pub type Coord = R32;
@@ -11,7 +14,7 @@ pub type Mass = R32;
 
 pub struct Model {
     pub player: Player,
-    pub surfaces: Vec<Surface>,
+    pub level: Level,
     pub best_jump: Option<Coord>,
 }
 
@@ -21,10 +24,10 @@ pub struct Player {
 }
 
 impl Model {
-    pub fn new() -> Self {
+    pub fn new(level: Level) -> Self {
         Self {
-            player: Player::new(Position::ZERO),
-            surfaces: default(),
+            player: Player::new(level.spawn_point),
+            level,
             best_jump: None,
         }
     }
