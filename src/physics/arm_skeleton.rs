@@ -3,6 +3,8 @@ use super::*;
 const ELBOW_ACCELERATION: f32 = 20.0;
 const HAND_ACCELERATION: f32 = 10.0;
 const MAX_ANGULAR_VELOCITY: f32 = 10.0;
+const MAX_HOLD_FORCE: f32 = 10.0;
+const MAX_PULL_FORCE: f32 = 2.0;
 
 #[derive(Debug, Clone, Copy)]
 struct PolarPoint {
@@ -74,8 +76,81 @@ impl ArmSkeleton {
         [shoulder, elbow, hand]
     }
 
-    /// Controls the bones and returns the total impulse used by the skeleton.
-    pub fn move_hand_towards(&mut self, mut target: Vec2<Coord>, delta_time: Time) -> Vec2<Coord> {
+    /// Controls the bones and returns the total impulse used by the skeleton
+    /// and whether the hold is broken.
+    pub fn control(
+        &mut self,
+        target: Vec2<Coord>,
+        hold: Option<Vec2<Coord>>,
+        body_impulse: Vec2<Coord>,
+        delta_time: Time,
+    ) -> (Vec2<Coord>, bool) {
+        let [elbow_target, hand_target] = match self.solve_angles(hold.unwrap_or(target)) {
+            Some(v) => v,
+            None => return (Vec2::ZERO, false),
+        };
+
+        let mut total_impulse = Vec2::ZERO;
+        if hold.is_some() {
+            self.elbow.point.angle = Angle::new(elbow_target);
+            self.hand.point.angle = Angle::new(hand_target);
+        } else {
+            // Calculate target velocity
+            let elbow_target = (self.elbow.point.angle.delta_to(Angle::new(elbow_target))
+                * r32(5.0))
+            .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
+            let hand_target = (self.hand.point.angle.delta_to(Angle::new(hand_target)) * r32(5.0))
+                .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
+
+            // Accelerate towards target velocity
+            let elbow_acc = (elbow_target - self.elbow.velocity)
+                .clamp_abs(r32(ELBOW_ACCELERATION) * delta_time);
+            let hand_acc =
+                (hand_target - self.hand.velocity).clamp_abs(r32(HAND_ACCELERATION) * delta_time);
+            self.elbow.velocity += elbow_acc;
+            self.hand.velocity += hand_acc;
+
+            // Calculate impulses
+            let (sin, cos) = self.elbow.point.angle.0.sin_cos();
+            let elbow_impulse = vec2(cos, sin).rotate_90() * elbow_acc * self.elbow.mass;
+            let (sin, cos) = (self.elbow.point.angle + self.hand.point.angle).0.sin_cos();
+            let hand_impulse = vec2(cos, sin).rotate_90() * hand_acc * self.hand.mass;
+
+            // Move with accordance to the velocity
+            self.elbow.point.angle += self.elbow.velocity * delta_time;
+            self.hand.point.angle += self.hand.velocity * delta_time;
+
+            total_impulse += elbow_impulse + hand_impulse;
+        }
+
+        // Check hold
+        let mut release = false;
+        if let Some(hold) = hold {
+            let mut force_left = Coord::new(MAX_HOLD_FORCE);
+            if hold.len() > self.max_reach() {
+                let normal = hold.normalize_or_zero();
+                let impulse = Vec2::dot(body_impulse, normal);
+                // Add the force required to hold on
+                force_left -= impulse;
+                if force_left < Coord::ZERO {
+                    release = true;
+                } else {
+                    total_impulse += normal * impulse;
+                }
+            }
+
+            if !release {
+                // Pull towards target
+                let delta = target - hold;
+                total_impulse +=
+                    delta.normalize_or_zero() * force_left.min(Coord::new(MAX_PULL_FORCE));
+            }
+        }
+
+        (total_impulse, release)
+    }
+
+    fn solve_angles(&self, mut target: Vec2<Coord>) -> Option<[R32; 2]> {
         // Make sure the target is within reach
         let mut len = target.len();
         let elbow = self.elbow.point.distance;
@@ -84,7 +159,7 @@ impl ArmSkeleton {
         let min_len = elbow - hand;
         if len.approx_eq(&R32::ZERO) {
             // safety check
-            return Vec2::ZERO;
+            return None;
         } else if len > max_len {
             target = target / len * max_len;
             len = max_len;
@@ -108,31 +183,7 @@ impl ArmSkeleton {
             .acos()))
         .delta_to(Angle::new(target.arg()));
 
-        // Calculate target velocity
-        let elbow_target = (self.elbow.point.angle.delta_to(Angle::new(elbow_target)) * r32(5.0))
-            .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
-        let hand_target = (self.hand.point.angle.delta_to(Angle::new(hand_target)) * r32(5.0))
-            .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
-
-        // Accelerate towards target velocity
-        let elbow_acc =
-            (elbow_target - self.elbow.velocity).clamp_abs(r32(ELBOW_ACCELERATION) * delta_time);
-        let hand_acc =
-            (hand_target - self.hand.velocity).clamp_abs(r32(HAND_ACCELERATION) * delta_time);
-        self.elbow.velocity += elbow_acc;
-        self.hand.velocity += hand_acc;
-
-        // Calculate impulses
-        let (sin, cos) = self.elbow.point.angle.0.sin_cos();
-        let elbow_impulse = vec2(cos, sin).rotate_90() * elbow_acc * self.elbow.mass;
-        let (sin, cos) = (self.elbow.point.angle + self.hand.point.angle).0.sin_cos();
-        let hand_impulse = vec2(cos, sin).rotate_90() * hand_acc * self.hand.mass;
-
-        // Move with accordance to the velocity
-        self.elbow.point.angle += self.elbow.velocity * delta_time;
-        self.hand.point.angle += self.hand.velocity * delta_time;
-
-        elbow_impulse + hand_impulse
+        Some([elbow_target, hand_target])
     }
 }
 

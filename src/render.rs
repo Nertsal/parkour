@@ -10,6 +10,12 @@ const HAND_TARGET_COLOR: Rgba<f32> = Rgba {
     b: 0.7,
     a: 1.0,
 };
+const HAND_TARGET_HOLD_COLOR: Rgba<f32> = Rgba {
+    r: 0.7,
+    g: 0.4,
+    b: 0.4,
+    a: 1.0,
+};
 const SHOULDER_COLOR: Rgba<f32> = Rgba {
     r: 0.5,
     g: 0.5,
@@ -68,7 +74,12 @@ impl Render {
 
         // Hand target
         let hand_target = model.player.control.hand_target + model.player.body.center.position;
-        self.draw_point(hand_target, Coord::new(0.3), HAND_TARGET_COLOR, framebuffer);
+        let color = if model.player.body.holding_to.is_some() {
+            HAND_TARGET_HOLD_COLOR
+        } else {
+            HAND_TARGET_COLOR
+        };
+        self.draw_point(hand_target, Coord::new(0.3), color, framebuffer);
 
         // Best jump
         if let Some(height) = model.best_jump {

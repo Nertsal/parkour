@@ -38,4 +38,8 @@ impl PhysicsPoint {
             ..*self
         }
     }
+
+    pub fn impulse(&self) -> Vec2<Coord> {
+        self.velocity * self.mass
+    }
 }

@@ -1,9 +1,9 @@
 use super::*;
 
-const MOUSE_SENSITIVITY: f32 = 0.01;
+const MOUSE_SENSITIVITY: f32 = 0.005;
 
-const MOVE_RIGHT: [geng::Key; 2] = [geng::Key::D, geng::Key::Right];
-const MOVE_LEFT: [geng::Key; 2] = [geng::Key::A, geng::Key::Left];
+const KEYS_MOVE_RIGHT: [geng::Key; 2] = [geng::Key::D, geng::Key::Right];
+const KEYS_MOVE_LEFT: [geng::Key; 2] = [geng::Key::A, geng::Key::Left];
 
 pub struct Game {
     geng: Geng,
@@ -16,8 +16,9 @@ pub struct Game {
 
 pub struct PlayerControl {
     pub hand_target_delta: Position,
-    pub jump: bool,
     pub move_speed: Coord,
+    pub jump: bool,
+    pub hold: bool,
 }
 
 impl Game {
@@ -62,13 +63,15 @@ impl geng::State for Game {
         let pressed =
             |keys: &[geng::Key]| -> bool { keys.iter().any(|&key| window.is_key_pressed(key)) };
         let mut movement = 0.0;
-        if pressed(&MOVE_RIGHT) {
+        if pressed(&KEYS_MOVE_RIGHT) {
             movement += 1.0;
         }
-        if pressed(&MOVE_LEFT) {
+        if pressed(&KEYS_MOVE_LEFT) {
             movement -= 1.0;
         }
         self.player_control.move_speed = r32(movement);
+
+        self.player_control.hold = window.is_button_pressed(geng::MouseButton::Left);
 
         self.model
             .update(self.player_control.take(), Time::new(delta_time as _));
@@ -90,6 +93,7 @@ impl Default for PlayerControl {
             hand_target_delta: Position::ZERO,
             move_speed: Coord::ZERO,
             jump: false,
+            hold: false,
         }
     }
 }

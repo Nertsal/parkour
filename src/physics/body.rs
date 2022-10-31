@@ -5,6 +5,7 @@ const ACCELERATION: f32 = 100.0;
 pub struct Body {
     pub center: PhysicsPoint,
     pub arm: ArmSkeleton,
+    pub holding_to: Option<Vec2<Coord>>,
     history: running::BodyMovementHistory,
 }
 
@@ -17,7 +18,19 @@ impl Body {
                 PhysicsPoint::new(vec2(0.0, -0.45).map(r32), Coord::new(0.15), Mass::new(0.7)),
                 PhysicsPoint::new(vec2(0.0, -0.55).map(r32), Coord::new(0.2), Mass::new(1.0)),
             ),
+            holding_to: None,
             history: default(),
+        }
+    }
+
+    pub fn try_holding(&mut self, surfaces: &[Surface]) {
+        let [_, _, hand] = self.arm.get_skeleton(&self.center);
+        let point = surfaces
+            .iter()
+            .flat_map(|surface| [surface.p1, surface.p2])
+            .find(|&p| (p - hand.position).len() <= hand.radius);
+        if let Some(point) = point {
+            self.holding_to = Some(point);
         }
     }
 
@@ -32,19 +45,27 @@ impl Body {
         let info = self.history.analyze();
         let stats = info.calc_stats();
 
-        // Velocity
+        // Calculate running velocity
         let control = control::BodyControl::from(control);
         let target_speed = control.move_speed * stats.move_speed;
         let delta_speed = target_speed - self.center.velocity.x;
         self.center.velocity.x += delta_speed.clamp_abs(Coord::new(ACCELERATION) * delta_time);
 
         // Movement
-        self.move_hand_towards(control.hand_target, delta_time);
         self.center.movement(delta_time);
-    }
-
-    fn move_hand_towards(&mut self, relative_target: Position, delta_time: Time) {
-        let impulse = self.arm.move_hand_towards(relative_target, delta_time);
+        let relative_target = control.hand_target;
+        let hold = self.holding_to.map(|pos| pos - self.center.position);
+        let (impulse, release) =
+            self.arm
+                .control(relative_target, hold, self.center.impulse(), delta_time);
         self.center.velocity -= impulse * r32(5.0) / self.center.mass;
+        if release {
+            self.holding_to = None;
+        } else if let Some(hold) = hold {
+            let reach = self.arm.max_reach();
+            if hold.len() > reach {
+                self.center.position = self.holding_to.unwrap() - hold.normalize_or_zero() * reach;
+            }
+        }
     }
 }

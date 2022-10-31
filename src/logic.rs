@@ -48,6 +48,14 @@ impl<'a> Logic<'a> {
             self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new)
                 + self.model.player.body.arm.impulse() / self.model.player.body.center.mass;
         }
+        if self.player_control.hold {
+            self.model
+                .player
+                .body
+                .try_holding(&self.model.level.surfaces);
+        } else {
+            self.model.player.body.holding_to = None;
+        }
     }
 
     fn gravity(&mut self) {

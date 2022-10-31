@@ -12,6 +12,8 @@ pub struct BodyControl {
     /// (clamped to the range if not), where 0 is sitting on the ground
     /// (or tucking) and 1 is fully extended.
     pub target_height: Coord,
+    /// Whether hands are trying to hold onto an object.
+    pub hold: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -23,6 +25,7 @@ impl Default for BodyControl {
             hand_target: Position::ZERO,
             move_speed: Coord::ZERO,
             target_height: Coord::ZERO,
+            hold: false,
         }
     }
 }
