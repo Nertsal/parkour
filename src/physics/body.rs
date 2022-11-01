@@ -14,7 +14,7 @@ pub struct Body {
 impl Body {
     pub fn new(position: Position) -> Self {
         Self {
-            center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(20.0)),
+            center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(30.0)),
             arm: ArmSkeleton::new(
                 PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
                 PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),

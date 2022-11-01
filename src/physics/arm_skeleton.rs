@@ -1,9 +1,9 @@
 use super::*;
 
-const ELBOW_ACCELERATION: f32 = 20.0;
-const HAND_ACCELERATION: f32 = 10.0;
+const ELBOW_ACCELERATION: f32 = 30.0;
+const HAND_ACCELERATION: f32 = 50.0;
 const MAX_ANGULAR_VELOCITY: f32 = 10.0;
-const MAX_HOLD_FORCE: f32 = 200.0;
+const MAX_HOLD_FORCE: f32 = 300.0;
 
 #[derive(Debug, Clone, Copy)]
 struct PolarPoint {
