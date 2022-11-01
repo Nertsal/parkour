@@ -34,7 +34,7 @@ impl<'a> Logic<'a> {
             .player
             .shift_target(self.player_control.hand_target_delta);
         self.model.player.control.move_speed = self.player_control.move_speed;
-        if self.player_control.jump {
+        if self.player_control.jump && self.model.player.body.ground_normal.is_some() {
             self.model.player.body.center.velocity += vec2(0.0, 5.0).map(Coord::new)
                 + self.model.player.body.arm.impulse() / self.model.player.body.center.mass;
         }

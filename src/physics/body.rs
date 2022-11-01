@@ -1,11 +1,13 @@
 use super::*;
 
-const ACCELERATION: f32 = 100.0;
+const GROUND_ACCELERATION: f32 = 100.0;
+const AIR_ACCELERATION: f32 = 5.0;
 
 pub struct Body {
     pub center: PhysicsPoint,
     pub arm: ArmSkeleton,
     pub holding_to: Option<Vec2<Coord>>,
+    pub ground_normal: Option<Vec2<Coord>>,
     history: running::BodyMovementHistory,
 }
 
@@ -19,6 +21,7 @@ impl Body {
                 PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),
             ),
             holding_to: None,
+            ground_normal: None,
             history: default(),
         }
     }
@@ -46,10 +49,15 @@ impl Body {
         let stats = info.calc_stats();
 
         // Calculate running velocity
+        let (direction, acceleration) = match self.ground_normal {
+            Some(normal) => (-normal.rotate_90(), GROUND_ACCELERATION),
+            None => (vec2(Coord::ONE, Coord::ZERO), AIR_ACCELERATION),
+        };
         let control = control::BodyControl::from(control);
         let target_speed = control.move_speed * stats.move_speed;
         let delta_speed = target_speed - self.center.velocity.x;
-        self.center.velocity.x += delta_speed.clamp_abs(Coord::new(ACCELERATION) * delta_time);
+        self.center.velocity +=
+            direction * delta_speed.clamp_abs(Coord::new(acceleration) * delta_time);
 
         // Movement
         self.center.movement(delta_time);

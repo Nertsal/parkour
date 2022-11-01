@@ -1,6 +1,8 @@
 use super::*;
 use crate::physics::*;
 
+const GROUND_ANGLE: f32 = 0.5;
+
 impl Logic<'_> {
     pub fn collisions(&mut self) {
         self.model.player.body.collide(&self.model.level.surfaces);
@@ -15,6 +17,9 @@ struct Collision {
 
 impl Body {
     fn collide(&mut self, surfaces: &[Surface]) {
+        // Reset ground
+        self.ground_normal = None;
+
         // Find the appropriate collision
         let collision = self
             .get_collisions(surfaces)
@@ -45,5 +50,9 @@ impl Body {
         self.center.position += collision.normal * collision.penetration;
         let normal_vel = Vec2::dot(self.center.velocity, collision.normal);
         self.center.velocity -= collision.normal * normal_vel;
+
+        // Check for grounded
+        let angle = collision.normal.arg() - R32::PI / r32(2.0);
+        self.ground_normal = (angle.abs().as_f32() < GROUND_ANGLE).then_some(collision.normal);
     }
 }
