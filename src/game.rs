@@ -12,16 +12,9 @@ pub struct Game {
     assets: Rc<Assets>,
     pub render: Render,
     pub model: Model,
-    pub player_control: PlayerControl,
+    pub player_control: BodyControl,
     toggle_editor: bool,
     camera_target: Vec2<Coord>,
-}
-
-pub struct PlayerControl {
-    pub hand_target_delta: Position,
-    pub move_speed: Coord,
-    pub jump: bool,
-    pub hold: bool,
 }
 
 impl Game {
@@ -43,17 +36,17 @@ impl Game {
 impl geng::State for Game {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
-        self.render.draw(&self.model, framebuffer);
+        self.render
+            .draw(&self.model, &self.player_control, framebuffer);
     }
 
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::MouseMove { delta, .. } => {
                 let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
-                self.player_control.hand_target_delta += delta;
+                self.player_control.hand_target += delta;
             }
             geng::Event::KeyDown { key } => match key {
-                geng::Key::Space => self.player_control.jump = true,
                 geng::Key::T => self.toggle_editor = true,
                 _ => {}
             },
@@ -77,14 +70,16 @@ impl geng::State for Game {
         }
         self.player_control.move_speed = r32(movement);
 
+        self.player_control.jump = pressed(&[geng::Key::Space]);
+
         self.player_control.hold = window.is_button_pressed(geng::MouseButton::Left);
 
         // Update model
         self.model
-            .update(self.player_control.take(), Time::new(delta_time));
+            .update(&mut self.player_control, Time::new(delta_time));
 
         // Update camera position
-        self.camera_target = self.model.player.body.center.position;
+        self.camera_target = self.model.player.center.position;
         let delta = self.camera_target - self.render.camera.center.map(Coord::new);
         self.render.camera.center +=
             (delta * Coord::new(delta_time / CAMERA_INTERPOLATION)).map(Coord::as_f32);
@@ -97,22 +92,5 @@ impl geng::State for Game {
                 &self.assets,
             )))
         })
-    }
-}
-
-impl Default for PlayerControl {
-    fn default() -> Self {
-        Self {
-            hand_target_delta: Position::ZERO,
-            move_speed: Coord::ZERO,
-            jump: false,
-            hold: false,
-        }
-    }
-}
-
-impl PlayerControl {
-    pub fn take(&mut self) -> Self {
-        std::mem::take(self)
     }
 }

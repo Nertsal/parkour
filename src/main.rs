@@ -8,8 +8,10 @@ mod model;
 mod physics;
 mod render;
 
+use control::*;
 use game::*;
 use model::*;
+use physics::*;
 use render::Render;
 
 #[derive(geng::Assets)]
@@ -21,6 +23,7 @@ fn main() {
 
     let geng = Geng::new_with(geng::ContextOptions {
         title: "Untitled Parkour Game".to_owned(),
+        vsync: true,
         ..default()
     });
 

@@ -5,7 +5,7 @@ const GROUND_ANGLE: f32 = 0.5;
 
 impl Logic<'_> {
     pub fn collisions(&mut self) {
-        self.model.player.body.collide(&self.model.level.surfaces);
+        self.model.player.collide(&self.model.level.surfaces);
     }
 }
 

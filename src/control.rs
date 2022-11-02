@@ -14,6 +14,7 @@ pub struct BodyControl {
     pub target_height: Coord,
     /// Whether hands are trying to hold onto an object.
     pub hold: bool,
+    pub jump: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -26,6 +27,7 @@ impl Default for BodyControl {
             move_speed: Coord::ZERO,
             target_height: Coord::ZERO,
             hold: false,
+            jump: false,
         }
     }
 }

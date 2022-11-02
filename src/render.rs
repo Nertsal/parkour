@@ -54,16 +54,16 @@ impl Render {
         }
     }
 
-    pub fn draw(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+    pub fn draw(&self, model: &Model, control: &BodyControl, framebuffer: &mut ugli::Framebuffer) {
         // Level
         self.draw_level(&model.level, framebuffer);
 
         // Body
-        self.draw_body(&model.player.body, framebuffer);
+        self.draw_body(&model.player, framebuffer);
 
         // Hand target
-        let hand_target = model.player.control.hand_target + model.player.body.center.position;
-        let color = if model.player.body.holding_to.is_some() {
+        let hand_target = control.hand_target + model.player.center.position;
+        let color = if model.player.holding_to.is_some() {
             HAND_TARGET_HOLD_COLOR
         } else {
             HAND_TARGET_COLOR

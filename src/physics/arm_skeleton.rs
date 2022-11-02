@@ -1,8 +1,8 @@
 use super::*;
 
-const ELBOW_ACCELERATION: f32 = 30.0;
-const HAND_ACCELERATION: f32 = 50.0;
-const MAX_ANGULAR_VELOCITY: f32 = 10.0;
+const ELBOW_ACCELERATION: f32 = 40.0;
+const HAND_ACCELERATION: f32 = 60.0;
+const MAX_ANGULAR_VELOCITY: f32 = 15.0;
 const MAX_HOLD_FORCE: f32 = 300.0;
 
 #[derive(Debug, Clone, Copy)]
@@ -119,7 +119,7 @@ impl ArmSkeleton {
             self.elbow.point.angle += self.elbow.velocity * delta_time;
             self.hand.point.angle += self.hand.velocity * delta_time;
 
-            total_impulse += (elbow_impulse + hand_impulse) * r32(5.0);
+            total_impulse += (elbow_impulse + hand_impulse) * r32(1.0);
         }
 
         // Check hold

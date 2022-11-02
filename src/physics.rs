@@ -7,6 +7,7 @@ mod surface;
 
 pub use arm_skeleton::*;
 pub use body::*;
+pub use running::*;
 pub use surface::*;
 
 #[derive(Debug, Clone, Copy)]

@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 use super::*;
 
 const RECORD_LENGTH: f32 = 2.0;
+const MAX_AMPLITUDE: f32 = 0.8;
 
 const WALKING_SPEED: f32 = 2.0;
 const MAX_RUNNING_SPEED: f32 = 6.0;
@@ -80,8 +81,9 @@ impl BodyMovementHistory {
 impl BodyMovementInfo {
     pub fn calc_stats(&self) -> BodyMovementStats {
         let amplitude = self.pos_bounds.width() / Coord::new(2.0); // Normalize
-        let rhythm = Time::ONE / (Time::ONE + (self.positive_time - self.negative_time).abs());
-        let t = (amplitude * rhythm).clamp(Coord::ZERO, Coord::ONE);
+        let rhythm = Time::ONE; // / (Time::ONE + (self.positive_time - self.negative_time).abs());
+        let max_amplitude = Coord::new(MAX_AMPLITUDE);
+        let t = (amplitude * rhythm).clamp(Coord::ZERO, max_amplitude) / max_amplitude;
         let move_speed =
             Coord::new(WALKING_SPEED) + Coord::new(MAX_RUNNING_SPEED - WALKING_SPEED) * t;
         BodyMovementStats { move_speed }
