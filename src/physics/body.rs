@@ -3,6 +3,7 @@ use super::*;
 pub struct Body {
     pub center: PhysicsPoint,
     pub arm: ArmSkeleton,
+    pub arm_back: ArmSkeleton,
     pub holding_to: Option<Vec2<Coord>>,
     pub ground_normal: Option<Vec2<Coord>>,
     pub history: running::BodyMovementHistory,
@@ -13,6 +14,11 @@ impl Body {
         Self {
             center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(20.0)),
             arm: ArmSkeleton::new(
+                PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
+                PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),
+                PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),
+            ),
+            arm_back: ArmSkeleton::new(
                 PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
                 PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),
                 PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),

@@ -56,7 +56,7 @@ impl Render {
 
     pub fn draw(&self, model: &Model, control: &BodyControl, framebuffer: &mut ugli::Framebuffer) {
         // Level
-        self.draw_level(&model.level, framebuffer);
+        self.draw_level(&model.level, framebuffer);\
 
         // Body
         self.draw_body(&model.player, framebuffer);
@@ -72,6 +72,9 @@ impl Render {
     }
 
     fn draw_body(&self, body: &Body, framebuffer: &mut ugli::Framebuffer) {
+        // Back arm skeleton
+        self.draw_arm(&body.arm_back, framebuffer);
+
         // Body
         self.draw_point(
             body.center.position,
@@ -80,16 +83,8 @@ impl Render {
             framebuffer,
         );
 
-        // Arm skeleton
-        let [shoulder, elbow, hand] = body.arm.get_skeleton(&body.center);
-        self.draw_point(
-            shoulder.position,
-            shoulder.radius,
-            SHOULDER_COLOR,
-            framebuffer,
-        );
-        self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
-        self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
+        // Arm skeleton 💀
+        self.draw_arm(&body.arm, framebuffer);
     }
 
     pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
@@ -100,6 +95,18 @@ impl Render {
                 &draw_2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
             );
         }
+    }
+
+    fn draw_arm(&self, arm: &Arm, framebuffer: &mut ugli::Framebuffer) {
+        let [shoulder, elbow, hand] = arm.get_skeleton(&BodyCenter::default());
+        self.draw_point(
+            shoulder.position,
+            shoulder.radius,
+            SHOULDER_COLOR,
+            framebuffer,
+        );
+        self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
+        self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
     }
 
     fn draw_point(
