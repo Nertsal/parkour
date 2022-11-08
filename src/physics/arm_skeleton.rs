@@ -6,7 +6,7 @@ const MAX_ANGULAR_VELOCITY: f32 = 15.0;
 const MAX_HOLD_FORCE: f32 = 300.0;
 
 #[derive(Debug, Clone, Copy)]
-struct PolarPoint {
+pub struct PolarPoint {
     pub distance: Coord,
     /// Angle to the positive direction of the x axis.
     pub angle: Angle,
@@ -22,7 +22,7 @@ struct PolarPhysicsPoint {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Angle(R32);
+pub struct Angle(R32);
 
 #[derive(Debug, Clone)]
 pub struct ArmSkeleton {

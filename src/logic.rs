@@ -72,12 +72,29 @@ impl<'a> Logic<'a> {
         player.center.movement(self.delta_time);
         let relative_target = control.hand_target;
         let hold = player.holding_to.map(|pos| pos - player.center.position);
+
+        // Arm movement
         let (impulse, release) = player.arm.control(
             relative_target,
             hold,
             player.center.impulse(),
             self.delta_time,
         );
+
+        let mut polar = PolarPoint::from_cartesian(relative_target);
+        polar.angle = polar.angle.delta_to(R32::PI);
+
+        let target = PolarPoint::to_cartesian(polar);
+
+        // Back arm movement
+        player.back_arm.control(
+            target,
+            false,
+            player.center.impulse(),
+            self.delta_time,
+        );
+
+
         player.center.velocity -= impulse / player.center.mass;
         if release {
             player.holding_to = None;
