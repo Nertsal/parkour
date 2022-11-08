@@ -56,7 +56,7 @@ impl Render {
 
     pub fn draw(&self, model: &Model, control: &BodyControl, framebuffer: &mut ugli::Framebuffer) {
         // Level
-        self.draw_level(&model.level, framebuffer);\
+        self.draw_level(&model.level, framebuffer);
 
         // Body
         self.draw_body(&model.player, framebuffer);
@@ -73,7 +73,7 @@ impl Render {
 
     fn draw_body(&self, body: &Body, framebuffer: &mut ugli::Framebuffer) {
         // Back arm skeleton
-        self.draw_arm(&body.arm_back, framebuffer);
+        self.draw_arm(&body.arm_back, &body.center, framebuffer);
 
         // Body
         self.draw_point(
@@ -84,7 +84,7 @@ impl Render {
         );
 
         // Arm skeleton 💀
-        self.draw_arm(&body.arm, framebuffer);
+        self.draw_arm(&body.arm, &body.center, framebuffer);
     }
 
     pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
@@ -97,8 +97,13 @@ impl Render {
         }
     }
 
-    fn draw_arm(&self, arm: &Arm, framebuffer: &mut ugli::Framebuffer) {
-        let [shoulder, elbow, hand] = arm.get_skeleton(&BodyCenter::default());
+    fn draw_arm(
+        &self,
+        arm: &ArmSkeleton,
+        body: &PhysicsPoint,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let [shoulder, elbow, hand] = arm.get_skeleton(body);
         self.draw_point(
             shoulder.position,
             shoulder.radius,
