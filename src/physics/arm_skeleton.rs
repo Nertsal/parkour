@@ -27,7 +27,7 @@ pub struct Angle(R32);
 #[derive(Debug, Clone)]
 pub struct ArmSkeleton {
     // Position of the shoulder relative to the body position.
-    shoulder: PhysicsBody,
+    pub shoulder: PhysicsBody,
     /// Elbow position in polar coordinates relative to the shoulder position.
     elbow: PolarPhysicsBody,
     /// Hand position in polar coordinates relative to the elbow position.

@@ -12,37 +12,41 @@ pub struct Body {
 impl Body {
     pub fn new(position: Position) -> Self {
         Self {
-            center: PhysicsBody::new(position, Mass::new(20.0), Collider::square(Coord::new(2.0))),
+            center: PhysicsBody::new(
+                position,
+                Mass::new(20.0),
+                Collider::rectangle(Coord::new(1.0), Coord::new(2.0)),
+            ),
             arm: ArmSkeleton::new(
                 PhysicsBody::new(
-                    Vec2::ZERO,
+                    vec2(0.0, 0.5).map(Coord::new),
                     Mass::new(0.5),
                     Collider::square(Coord::new(0.4)),
                 ),
                 PhysicsBody::new(
-                    vec2(0.0, -0.7).map(r32),
+                    vec2(0.0, -0.7).map(Coord::new),
                     Mass::new(0.7),
                     Collider::square(Coord::new(0.3)),
                 ),
                 PhysicsBody::new(
-                    vec2(0.0, -0.8).map(r32),
+                    vec2(0.0, -0.8).map(Coord::new),
                     Mass::new(1.0),
                     Collider::square(Coord::new(0.4)),
                 ),
             ),
             arm_back: ArmSkeleton::new(
                 PhysicsBody::new(
-                    Vec2::ZERO,
+                    vec2(0.0, 0.5).map(Coord::new),
                     Mass::new(0.5),
                     Collider::square(Coord::new(0.4)),
                 ),
                 PhysicsBody::new(
-                    vec2(0.0, -0.7).map(r32),
+                    vec2(0.0, -0.7).map(Coord::new),
                     Mass::new(0.7),
                     Collider::square(Coord::new(0.3)),
                 ),
                 PhysicsBody::new(
-                    vec2(0.0, -0.8).map(r32),
+                    vec2(0.0, -0.8).map(Coord::new),
                     Mass::new(1.0),
                     Collider::square(Coord::new(0.4)),
                 ),

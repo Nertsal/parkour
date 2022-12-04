@@ -70,8 +70,10 @@ impl<'a> Logic<'a> {
 
         // Movement
         player.center.movement(self.delta_time);
-        let relative_target = control.hand_target;
-        let hold = player.holding_to.map(|pos| pos - player.center.position);
+        let relative_target = control.hand_target - player.arm.shoulder.position;
+        let hold = player
+            .holding_to
+            .map(|pos| pos - player.center.position - player.arm.shoulder.position);
 
         // Arm movement
         let (impulse, release) = player.arm.control(
@@ -95,8 +97,9 @@ impl<'a> Logic<'a> {
         } else if let Some(hold) = hold {
             let reach = player.arm.max_reach();
             if hold.len() > reach {
-                player.center.position =
-                    player.holding_to.unwrap() - hold.normalize_or_zero() * reach;
+                player.center.position = player.holding_to.unwrap()
+                    - hold.normalize_or_zero() * reach
+                    - player.arm.shoulder.position;
             }
         }
     }

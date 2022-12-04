@@ -19,6 +19,10 @@ impl Collider {
         Self::Aabb(AABB::ZERO.extend_uniform(side / Coord::new(2.0)))
     }
 
+    pub fn rectangle(width: Coord, height: Coord) -> Self {
+        Self::Aabb(AABB::ZERO.extend_symmetric(vec2(width, height) / Coord::new(2.0)))
+    }
+
     pub fn check_collision(&self, other: &Self, other_offset: Vec2<Coord>) -> Option<Collision> {
         let mut collision = None;
         for axis in get_critical_axes(self, other) {
