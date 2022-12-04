@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Body {
-    pub center: PhysicsPoint,
+    pub center: PhysicsBody,
     pub arm: ArmSkeleton,
     pub arm_back: ArmSkeleton,
     pub holding_to: Option<Vec2<Coord>>,
@@ -12,16 +12,40 @@ pub struct Body {
 impl Body {
     pub fn new(position: Position) -> Self {
         Self {
-            center: PhysicsPoint::new(position, Coord::new(1.0), Mass::new(20.0)),
+            center: PhysicsBody::new(position, Mass::new(20.0), Collider::square(Coord::new(2.0))),
             arm: ArmSkeleton::new(
-                PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
-                PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),
-                PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),
+                PhysicsBody::new(
+                    Vec2::ZERO,
+                    Mass::new(0.5),
+                    Collider::square(Coord::new(0.4)),
+                ),
+                PhysicsBody::new(
+                    vec2(0.0, -0.7).map(r32),
+                    Mass::new(0.7),
+                    Collider::square(Coord::new(0.3)),
+                ),
+                PhysicsBody::new(
+                    vec2(0.0, -0.8).map(r32),
+                    Mass::new(1.0),
+                    Collider::square(Coord::new(0.4)),
+                ),
             ),
             arm_back: ArmSkeleton::new(
-                PhysicsPoint::new(Vec2::ZERO, Coord::new(0.2), Mass::new(0.5)),
-                PhysicsPoint::new(vec2(0.0, -0.7).map(r32), Coord::new(0.15), Mass::new(0.7)),
-                PhysicsPoint::new(vec2(0.0, -0.8).map(r32), Coord::new(0.2), Mass::new(1.0)),
+                PhysicsBody::new(
+                    Vec2::ZERO,
+                    Mass::new(0.5),
+                    Collider::square(Coord::new(0.4)),
+                ),
+                PhysicsBody::new(
+                    vec2(0.0, -0.7).map(r32),
+                    Mass::new(0.7),
+                    Collider::square(Coord::new(0.3)),
+                ),
+                PhysicsBody::new(
+                    vec2(0.0, -0.8).map(r32),
+                    Mass::new(1.0),
+                    Collider::square(Coord::new(0.4)),
+                ),
             ),
             holding_to: None,
             ground_normal: None,
@@ -34,7 +58,7 @@ impl Body {
         let point = surfaces
             .iter()
             .flat_map(|surface| [surface.p1, surface.p2])
-            .find(|&p| (p - hand.position).len() <= hand.radius);
+            .find(|&p| hand.collider.contains(p, hand.position));
         if let Some(point) = point {
             self.holding_to = Some(point);
         }

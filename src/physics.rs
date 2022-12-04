@@ -2,29 +2,31 @@ use super::*;
 
 mod arm_skeleton;
 mod body;
+mod collider;
 mod running;
 mod surface;
 
 pub use arm_skeleton::*;
 pub use body::*;
+pub use collider::*;
 pub use running::*;
 pub use surface::*;
 
 #[derive(Debug, Clone, Copy)]
-pub struct PhysicsPoint {
+pub struct PhysicsBody {
     pub position: Position,
-    pub radius: Coord,
     pub velocity: Vec2<Coord>,
     pub mass: Mass,
+    pub collider: Collider,
 }
 
-impl PhysicsPoint {
-    pub fn new(position: Position, radius: Coord, mass: Mass) -> Self {
+impl PhysicsBody {
+    pub fn new(position: Position, mass: Mass, collider: Collider) -> Self {
         Self {
-            velocity: Vec2::ZERO,
             position,
-            radius,
+            velocity: Vec2::ZERO,
             mass,
+            collider,
         }
     }
 
@@ -42,5 +44,10 @@ impl PhysicsPoint {
 
     pub fn impulse(&self) -> Vec2<Coord> {
         self.velocity * self.mass
+    }
+
+    pub fn check_collision(&self, other: &Self) -> Option<Collision> {
+        self.collider
+            .check_collision(&other.collider, other.position - self.position)
     }
 }

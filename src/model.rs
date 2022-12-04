@@ -12,6 +12,7 @@ pub type Mass = R32;
 pub struct Model {
     pub player: Body,
     pub level: Level,
+    pub surface_collision: Option<usize>,
 }
 
 impl Model {
@@ -19,6 +20,7 @@ impl Model {
         Self {
             player: Body::new(level.spawn_point),
             level,
+            surface_collision: None,
         }
     }
 }

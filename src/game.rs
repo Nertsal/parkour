@@ -46,10 +46,7 @@ impl geng::State for Game {
                 let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
                 self.player_control.hand_target += delta;
             }
-            geng::Event::KeyDown { key } => match key {
-                geng::Key::T => self.toggle_editor = true,
-                _ => {}
-            },
+            geng::Event::KeyDown { key: geng::Key::T } => self.toggle_editor = true,
             _ => {}
         }
     }

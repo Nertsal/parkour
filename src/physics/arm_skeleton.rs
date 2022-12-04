@@ -13,12 +13,12 @@ pub struct PolarPoint {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct PolarPhysicsPoint {
+struct PolarPhysicsBody {
     point: PolarPoint,
     /// Angular velocity.
     velocity: R32,
-    radius: Coord,
     mass: Mass,
+    collider: Collider,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -27,17 +27,17 @@ pub struct Angle(R32);
 #[derive(Debug, Clone)]
 pub struct ArmSkeleton {
     // Position of the shoulder relative to the body position.
-    shoulder: PhysicsPoint,
+    shoulder: PhysicsBody,
     /// Elbow position in polar coordinates relative to the shoulder position.
-    elbow: PolarPhysicsPoint,
+    elbow: PolarPhysicsBody,
     /// Hand position in polar coordinates relative to the elbow position.
-    hand: PolarPhysicsPoint,
+    hand: PolarPhysicsBody,
 }
 
 impl ArmSkeleton {
     /// Constructs an arm skeleton based on the relative positions of shoulder w.r.t. body,
     /// elbow w.r.t. shoulder, and hand w.r.t. elbow.
-    pub fn new(shoulder: PhysicsPoint, elbow: PhysicsPoint, hand: PhysicsPoint) -> Self {
+    pub fn new(shoulder: PhysicsBody, elbow: PhysicsBody, hand: PhysicsBody) -> Self {
         Self {
             shoulder,
             elbow: elbow.into(),
@@ -61,10 +61,10 @@ impl ArmSkeleton {
     }
 
     /// The returns the skeleton in world coordinates as an array `[shoulder, elbow, hand]`.
-    pub fn get_skeleton(&self, body: &PhysicsPoint) -> [PhysicsPoint; 3] {
+    pub fn get_skeleton(&self, body: &PhysicsBody) -> [PhysicsBody; 3] {
         let shoulder = self.shoulder.relative(body);
         let elbow = self.elbow.relative(&shoulder);
-        let hand = PolarPhysicsPoint {
+        let hand = PolarPhysicsBody {
             point: PolarPoint {
                 angle: self.hand.point.angle + self.elbow.point.angle,
                 ..self.hand.point
@@ -201,24 +201,24 @@ impl PolarPoint {
     }
 }
 
-impl PolarPhysicsPoint {
-    pub fn relative(self, point: &PhysicsPoint) -> PhysicsPoint {
-        PhysicsPoint {
+impl PolarPhysicsBody {
+    pub fn relative(self, point: &PhysicsBody) -> PhysicsBody {
+        PhysicsBody {
             position: self.point.to_cartesian() + point.position,
             velocity: point.velocity,
-            radius: self.radius,
             mass: self.mass,
+            collider: self.collider,
         }
     }
 }
 
-impl From<PhysicsPoint> for PolarPhysicsPoint {
-    fn from(point: PhysicsPoint) -> Self {
+impl From<PhysicsBody> for PolarPhysicsBody {
+    fn from(point: PhysicsBody) -> Self {
         Self {
             point: PolarPoint::from_cartesian(point.position),
             velocity: R32::ZERO,
-            radius: point.radius,
             mass: point.mass,
+            collider: point.collider,
         }
     }
 }

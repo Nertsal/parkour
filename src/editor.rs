@@ -161,7 +161,7 @@ impl geng::State for Editor {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         self.framebuffer_size = framebuffer.size().map(|x| x as f32);
-        self.render.draw_level(&self.level, framebuffer);
+        self.render.draw_level(&self.level, None, framebuffer);
 
         let position = self.geng.window().mouse_pos().map(|x| x as f32);
         let world_pos = self

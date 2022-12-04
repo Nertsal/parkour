@@ -5,44 +5,39 @@ const GROUND_ANGLE: f32 = 0.5;
 
 impl Logic<'_> {
     pub fn collisions(&mut self) {
-        self.model.player.collide(&self.model.level.surfaces);
+        let i = self.model.player.collide(&self.model.level.surfaces);
+        self.model.surface_collision = i;
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-struct Collision {
-    pub normal: Vec2<Coord>,
-    pub penetration: Coord,
-}
-
 impl Body {
-    fn collide(&mut self, surfaces: &[Surface]) {
+    fn collide(&mut self, surfaces: &[Surface]) -> Option<usize> {
         // Reset ground
         self.ground_normal = None;
 
         // Find the appropriate collision
         let collision = self
             .get_collisions(surfaces)
-            .max_by_key(|collision| collision.penetration);
+            .max_by_key(|(_, collision)| collision.penetration);
 
         // Resolve the collision
-        if let Some(collision) = collision {
+        if let Some((_, collision)) = collision {
             self.resolve_collision(collision);
         }
+
+        collision.map(|(i, _)| i)
     }
 
     fn get_collisions<'a>(
         &'a self,
         surfaces: impl IntoIterator<Item = &'a Surface> + 'a,
-    ) -> impl Iterator<Item = Collision> + 'a {
-        surfaces.into_iter().filter_map(|surface| {
-            let delta = surface.delta_to(self.center.position);
-            let penetration = self.center.radius - delta.len();
-            (penetration > Coord::ZERO && Vec2::dot(delta, self.center.velocity) > Coord::ZERO)
-                .then(|| Collision {
-                    normal: -delta.normalize_or_zero(),
-                    penetration,
-                })
+    ) -> impl Iterator<Item = (usize, Collision)> + 'a {
+        surfaces.into_iter().enumerate().filter_map(|(i, surface)| {
+            self.center
+                .collider
+                .check_collision(&Collider::Surface(*surface), -self.center.position)
+                .filter(|collision| Vec2::dot(collision.normal, self.center.velocity) < Coord::ZERO)
+                .map(|col| (i, col))
         })
     }
 

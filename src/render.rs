@@ -56,7 +56,7 @@ impl Render {
 
     pub fn draw(&self, model: &Model, control: &BodyControl, framebuffer: &mut ugli::Framebuffer) {
         // Level
-        self.draw_level(&model.level, framebuffer);
+        self.draw_level(&model.level, model.surface_collision, framebuffer);
 
         // Body
         self.draw_body(&model.player, framebuffer);
@@ -76,42 +76,37 @@ impl Render {
         self.draw_arm(&body.arm_back, &body.center, framebuffer);
 
         // Body
-        self.draw_point(
-            body.center.position,
-            body.center.radius,
-            Rgba::GRAY,
-            framebuffer,
-        );
+        self.draw_physics_body(&body.center, Rgba::GRAY, framebuffer);
 
         // Arm skeleton 💀
         self.draw_arm(&body.arm, &body.center, framebuffer);
     }
 
-    pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
-        for surface in &level.surfaces {
+    pub fn draw_level(
+        &self,
+        level: &Level,
+        surface_collision: Option<usize>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        for (i, surface) in level.surfaces.iter().enumerate() {
+            let color = if Some(i) == surface_collision {
+                Rgba::RED
+            } else {
+                Rgba::GRAY
+            };
             self.geng.draw_2d(
                 framebuffer,
                 &self.camera,
-                &draw_2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
+                &draw_2d::Segment::new(surface.segment_f32(), 0.1, color),
             );
         }
     }
 
-    fn draw_arm(
-        &self,
-        arm: &ArmSkeleton,
-        body: &PhysicsPoint,
-        framebuffer: &mut ugli::Framebuffer,
-    ) {
+    fn draw_arm(&self, arm: &ArmSkeleton, body: &PhysicsBody, framebuffer: &mut ugli::Framebuffer) {
         let [shoulder, elbow, hand] = arm.get_skeleton(body);
-        self.draw_point(
-            shoulder.position,
-            shoulder.radius,
-            SHOULDER_COLOR,
-            framebuffer,
-        );
-        self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
-        self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
+        self.draw_physics_body(&shoulder, SHOULDER_COLOR, framebuffer);
+        self.draw_physics_body(&elbow, ELBOW_COLOR, framebuffer);
+        self.draw_physics_body(&hand, HAND_COLOR, framebuffer);
     }
 
     fn draw_point(
@@ -128,5 +123,54 @@ impl Render {
             color,
         )
         .draw_2d(&self.geng, framebuffer, &self.camera);
+    }
+
+    fn draw_physics_body(
+        &self,
+        body: &PhysicsBody,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        self.draw_collider(body.position, &body.collider, color, framebuffer)
+    }
+
+    fn draw_collider(
+        &self,
+        position: Position,
+        collider: &Collider,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        match collider {
+            Collider::Aabb(aabb) => {
+                let aabb = aabb.translate(position).map(Coord::as_f32);
+                let left_mid = (aabb.bottom_left() + aabb.top_left()) / 2.0;
+                let chain = Chain::new(vec![
+                    left_mid,
+                    aabb.bottom_left(),
+                    aabb.bottom_right(),
+                    aabb.top_right(),
+                    aabb.top_left(),
+                    left_mid,
+                ]);
+                self.geng.draw_2d(
+                    framebuffer,
+                    &self.camera,
+                    &draw_2d::Chain::new(chain, aabb.width() * 0.125, color, 1),
+                );
+            }
+            Collider::Surface(surface) => self.geng.draw_2d(
+                framebuffer,
+                &self.camera,
+                &draw_2d::Segment::new(
+                    Segment::new(
+                        (surface.p1 + position).map(Coord::as_f32),
+                        (surface.p2 + position).map(Coord::as_f32),
+                    ),
+                    0.1,
+                    Rgba::GRAY,
+                ),
+            ),
+        }
     }
 }

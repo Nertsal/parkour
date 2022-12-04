@@ -22,4 +22,23 @@ impl Surface {
         let penetration = Vec2::dot(self.p1 - point, normal) / Vec2::dot(normal, normal);
         normal * penetration
     }
+
+    pub fn direction(&self) -> Vec2<Coord> {
+        (self.p2 - self.p1).normalize_or_zero()
+    }
+
+    pub fn length(&self) -> Coord {
+        (self.p2 - self.p1).len()
+    }
+
+    pub fn normal(&self) -> Vec2<Coord> {
+        self.direction().rotate_90()
+    }
+
+    /// Projects the point onto the surface.
+    /// 0 is the start (p1) of the surface,
+    /// and positive direction is towards the end (p2).
+    pub fn project(&self, point: Vec2<Coord>) -> Coord {
+        Vec2::dot(point - self.p1, self.direction())
+    }
 }
