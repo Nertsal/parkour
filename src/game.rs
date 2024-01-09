@@ -48,9 +48,12 @@ impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::CursorMove { position } => {
-                let delta = position.as_f32() - self.cursor_pos;
-                let delta = delta * MOUSE_SENSITIVITY;
                 self.cursor_pos = position.as_f32();
+            }
+            geng::Event::RawMouseMove { delta } => {
+                // let delta = position.as_f32() - self.cursor_pos;
+                let delta = delta.as_f32();
+                let delta = delta * MOUSE_SENSITIVITY;
                 self.player_control.hand_target += delta.as_r32();
             }
             geng::Event::KeyPress { key: geng::Key::T } => self.toggle_editor = true,
