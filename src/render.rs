@@ -1,6 +1,7 @@
 use crate::{control::BodyControl, model::*, Assets};
 
 use geng::prelude::*;
+use geng_utils::conversions::*;
 
 const HAND_TARGET_COLOR: Rgba<f32> = Rgba {
     r: 0.7,
@@ -60,34 +61,80 @@ impl Render {
         self.draw_body(&model.player, framebuffer);
 
         // Hand target
-        let hand_target = control.hand_target + model.player.center.position;
-        let color = if model.player.holding_to.is_some() {
-            HAND_TARGET_HOLD_COLOR
-        } else {
+        let hand_target = control.hand_target + model.player.collider.position;
+        let color =
+        // if model.player.holding_to.is_some() {
+        //     HAND_TARGET_HOLD_COLOR
+        // } else {
             HAND_TARGET_COLOR
-        };
-        self.draw_point(hand_target, Coord::new(0.3), color, framebuffer);
+        // }
+        ;
+        self.draw_circle(hand_target, r32(0.3), color, framebuffer);
+    }
+
+    fn draw_circle(
+        &self,
+        pos: Position,
+        radius: Coord,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            &self.camera,
+            &draw2d::Ellipse::circle(pos.as_f32(), radius.as_f32(), color),
+        );
+    }
+
+    fn draw_collider(
+        &self,
+        collider: &Collider,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        match collider.shape {
+            Shape::Segment { a, b } => {
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    &self.camera,
+                    &draw2d::Segment::new(Segment(a.as_f32(), b.as_f32()), 0.1, color),
+                );
+            }
+            Shape::Circle { radius } => {
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    &self.camera,
+                    &draw2d::Ellipse::circle(collider.position.as_f32(), radius.as_f32(), color),
+                );
+            }
+            Shape::Rectangle { width, height } => {
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    &self.camera,
+                    &draw2d::Quad::new(
+                        Aabb2::point(collider.position.as_f32())
+                            .extend_symmetric(vec2(width, height).as_f32() / 2.0),
+                        color,
+                    ),
+                );
+            }
+        }
     }
 
     fn draw_body(&self, body: &Body, framebuffer: &mut ugli::Framebuffer) {
         // Body
-        self.draw_point(
-            body.center.position,
-            body.center.radius,
-            Rgba::GRAY,
-            framebuffer,
-        );
+        self.draw_collider(&body.collider, Rgba::GRAY, framebuffer);
 
         // Arm skeleton
-        let [shoulder, elbow, hand] = body.arm.get_skeleton(&body.center);
-        self.draw_point(
-            shoulder.position,
-            shoulder.radius,
-            SHOULDER_COLOR,
-            framebuffer,
-        );
-        self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
-        self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
+        // let [shoulder, elbow, hand] = body.arm.get_skeleton(&body.center);
+        // self.draw_point(
+        //     shoulder.position,
+        //     shoulder.radius,
+        //     SHOULDER_COLOR,
+        //     framebuffer,
+        // );
+        // self.draw_point(elbow.position, elbow.radius, ELBOW_COLOR, framebuffer);
+        // self.draw_point(hand.position, hand.radius, HAND_COLOR, framebuffer);
     }
 
     pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
@@ -98,24 +145,5 @@ impl Render {
                 &draw2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
             );
         }
-    }
-
-    fn draw_point(
-        &self,
-        position: Position,
-        radius: Coord,
-        color: Rgba<f32>,
-        framebuffer: &mut ugli::Framebuffer,
-    ) {
-        self.geng.draw2d().draw2d(
-            framebuffer,
-            &self.camera,
-            &draw2d::Ellipse::circle_with_cut(
-                position.map(|x| x.as_f32()),
-                radius.as_f32() * 0.75,
-                radius.as_f32(),
-                color,
-            ),
-        );
     }
 }

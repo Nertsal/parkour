@@ -22,9 +22,8 @@ pub struct BodyMovementState {
 
 #[derive(Debug, Clone)]
 pub struct BodyMovementInfo {
-    positive_time: Time,
-    negative_time: Time,
-    pos_bounds: Aabb2<Coord>,
+    frequency: R32,
+    amplitude: Coord,
     hand: Position,
 }
 
@@ -49,41 +48,45 @@ impl BodyMovementHistory {
 
     pub fn analyze(&self) -> BodyMovementInfo {
         let mut info = BodyMovementInfo {
-            positive_time: Time::ZERO,
-            negative_time: Time::ZERO,
-            pos_bounds: Aabb2::ZERO,
+            frequency: R32::ZERO,
+            amplitude: Coord::ZERO,
             hand: Position::ZERO,
         };
-        let mut states = self.states.iter();
-        if let Some(state) = states.next() {
-            let mut last_time = state.time;
-            info.pos_bounds = Aabb2::point(state.hand);
-            for state in std::iter::once(state).chain(states) {
-                let positive = state.hand.x >= Coord::ZERO;
-                let time_record = if positive {
-                    &mut info.positive_time
-                } else {
-                    &mut info.negative_time
-                };
-                *time_record += state.time - last_time;
-                last_time = state.time;
-                info.hand = state.hand;
-                info.pos_bounds.min.x = info.pos_bounds.min.x.min(state.hand.x);
-                info.pos_bounds.max.x = info.pos_bounds.max.x.max(state.hand.x);
-                info.pos_bounds.min.y = info.pos_bounds.min.y.min(state.hand.y);
-                info.pos_bounds.max.y = info.pos_bounds.max.y.max(state.hand.y);
+
+        let mut last_side = 0.0;
+        let mut last_amp = Coord::ZERO;
+
+        let mut swings = Vec::new();
+        let mut total_amp = R32::ZERO;
+
+        for state in &self.states {
+            let side = state.hand.x.signum().as_f32();
+            let amp = state.hand.x.abs();
+            if last_side != side {
+                swings.push(last_amp);
+                total_amp += last_amp;
+                last_side = side;
+            } else if amp > last_amp {
+                last_amp = amp;
             }
         }
+
+        let start = self.states.front().map_or(0.0, |s| s.time.as_f32());
+        let end = self.states.back().map_or(0.0, |s| s.time.as_f32());
+        info.frequency = r32(swings.len() as f32 / (end - start).max(0.01));
+        info.amplitude = total_amp / r32(swings.len().max(1) as f32);
+
         info
     }
 }
 
 impl BodyMovementInfo {
     pub fn calc_stats(&self) -> BodyMovementStats {
-        let amplitude = self.pos_bounds.width() / Coord::new(2.0); // Normalize
+        let amplitude = self.amplitude;
+        let frequency = (self.frequency / r32(7.0)).min(r32(1.0));
         let rhythm = Time::ONE; // / (Time::ONE + (self.positive_time - self.negative_time).abs());
         let max_amplitude = Coord::new(MAX_AMPLITUDE);
-        let t = (amplitude * rhythm).clamp(Coord::ZERO, max_amplitude) / max_amplitude;
+        let t = (amplitude * rhythm * frequency).clamp(Coord::ZERO, max_amplitude) / max_amplitude;
         let move_speed =
             Coord::new(WALKING_SPEED) + Coord::new(MAX_RUNNING_SPEED - WALKING_SPEED) * t;
         BodyMovementStats { move_speed }

@@ -28,12 +28,31 @@ impl Collider {
         }
     }
 
+    pub fn new_aabb(aabb: Aabb2<Coord>) -> Self {
+        let shape = Shape::Rectangle {
+            width: aabb.width(),
+            height: aabb.height(),
+        };
+        Self::new(aabb.center(), shape)
+    }
+
+    pub fn new_circle(pos: Position, radius: Coord) -> Self {
+        let shape = Shape::Circle { radius };
+        Self::new(pos, shape)
+    }
+
+    pub fn new_segment(anchor: Position, a: Position, b: Position) -> Self {
+        let shape = Shape::Segment {
+            a: a - anchor,
+            b: b - anchor,
+        };
+        Self::new(anchor, shape)
+    }
+
     pub fn transform_mat(&self) -> mat3<Coord> {
         mat3::translate(self.position) * mat3::rotate(self.rotation)
     }
 
-    /// NOTE: Use with caution, as it does not normalize distance to other entities.
-    /// So it should not be used in raw form for collisions or rendering.
     pub fn compute_aabb(&self) -> Aabb2<Coord> {
         let (iso, shape) = self.to_parry();
         let parry2d::bounding_volume::Aabb { mins, maxs } = shape.compute_aabb(&iso);
@@ -49,8 +68,6 @@ impl Collider {
         parry2d::math::Isometry::new(parry2d::na::Vector2::new(x, y), angle)
     }
 
-    /// NOTE: Use with caution, as it does not normalize distance to other entities.
-    /// So it should not be used in raw form for collisions or rendering.
     fn to_parry(&self) -> (parry2d::math::Isometry<f32>, Box<dyn parry2d::shape::Shape>) {
         (self.get_iso(), self.shape.to_parry())
     }

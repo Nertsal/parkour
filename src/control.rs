@@ -41,9 +41,7 @@ impl From<VerifiedBodyControl> for BodyControl {
 
 impl BodyControl {
     pub fn verify(mut self, body: &Body) -> VerifiedBodyControl {
-        self.hand_target = self
-            .hand_target
-            .clamp_len(..=body.arm.max_reach() * r32(1.1));
+        self.hand_target = self.hand_target.clamp_len(..=body.max_reach() * r32(5.0));
         self.move_speed = self.move_speed.clamp_range(-Coord::ONE..=Coord::ONE);
         self.target_height = self.target_height.clamp_range(Coord::ZERO..=Coord::ONE);
         VerifiedBodyControl(self)

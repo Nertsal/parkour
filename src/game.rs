@@ -88,7 +88,7 @@ impl geng::State for Game {
             .update(&mut self.player_control, Time::new(delta_time));
 
         // Update camera position
-        self.camera_target = self.model.player.center.position;
+        self.camera_target = self.model.player.collider.position;
         let delta = self.camera_target - self.render.camera.center.map(Coord::new);
         self.render.camera.center +=
             (delta * Coord::new(delta_time / CAMERA_INTERPOLATION)).map(Coord::as_f32);
