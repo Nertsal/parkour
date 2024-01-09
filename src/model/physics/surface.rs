@@ -7,6 +7,10 @@ pub struct Surface {
 }
 
 impl Surface {
+    pub fn collider(&self) -> Collider {
+        Collider::new_segment(vec2::ZERO, self.p1, self.p2)
+    }
+
     pub fn segment_f32(&self) -> Segment<f32> {
         Segment(self.p1.map(Coord::as_f32), self.p2.map(Coord::as_f32))
     }

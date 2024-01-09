@@ -15,6 +15,8 @@ pub struct BodyControl {
     pub target_height: Coord,
     /// Whether hands are trying to hold onto an object.
     pub hold: bool,
+    /// Whether trying to push with hands.
+    pub push: bool,
     pub jump: bool,
 }
 
@@ -28,6 +30,7 @@ impl Default for BodyControl {
             move_speed: Coord::ZERO,
             target_height: Coord::ZERO,
             hold: false,
+            push: false,
             jump: false,
         }
     }
@@ -41,7 +44,7 @@ impl From<VerifiedBodyControl> for BodyControl {
 
 impl BodyControl {
     pub fn verify(mut self, body: &Body) -> VerifiedBodyControl {
-        self.hand_target = self.hand_target.clamp_len(..=body.max_reach() * r32(5.0));
+        self.hand_target = self.hand_target.clamp_len(..=body.max_reach() * r32(1.1));
         self.move_speed = self.move_speed.clamp_range(-Coord::ONE..=Coord::ONE);
         self.target_height = self.target_height.clamp_range(Coord::ZERO..=Coord::ONE);
         VerifiedBodyControl(self)

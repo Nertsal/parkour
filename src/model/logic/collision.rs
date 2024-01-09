@@ -28,10 +28,9 @@ impl Body {
         &'a self,
         surfaces: impl IntoIterator<Item = &'a Surface> + 'a,
     ) -> impl Iterator<Item = Collision> + 'a {
-        surfaces.into_iter().filter_map(|surface| {
-            self.collider
-                .collide(&Collider::new_segment(vec2::ZERO, surface.p1, surface.p2))
-        })
+        surfaces
+            .into_iter()
+            .filter_map(|surface| self.collider.collide(&surface.collider()))
     }
 
     fn resolve_collision(&mut self, collision: Collision) {

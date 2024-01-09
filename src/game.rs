@@ -79,9 +79,9 @@ impl geng::State for Game {
         }
         self.player_control.move_speed = r32(movement);
 
+        // self.player_control.hold = window.is_button_pressed(geng::MouseButton::Left);
+        self.player_control.push = window.is_button_pressed(geng::MouseButton::Left);
         self.player_control.jump = pressed(&[geng::Key::Space]);
-
-        self.player_control.hold = window.is_button_pressed(geng::MouseButton::Left);
 
         // Update model
         self.model

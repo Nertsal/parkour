@@ -33,6 +33,18 @@ const HAND_COLOR: Rgba<f32> = Rgba {
     b: 0.9,
     a: 1.0,
 };
+const HAND_PUSH_COLOR: Rgba<f32> = Rgba {
+    r: 0.7,
+    g: 0.7,
+    b: 0.7,
+    a: 1.0,
+};
+const HAND_PUSH_GRAB_COLOR: Rgba<f32> = Rgba {
+    r: 0.0,
+    g: 0.7,
+    b: 0.7,
+    a: 1.0,
+};
 
 pub struct Render {
     geng: Geng,
@@ -60,6 +72,21 @@ impl Render {
         // Body
         self.draw_body(&model.player, framebuffer);
 
+        // Hand push point
+        if let Some(push) = &model.player.push_point {
+            let color = if push.grabbed {
+                HAND_PUSH_GRAB_COLOR
+            } else {
+                HAND_PUSH_COLOR
+            };
+            self.draw_circle(
+                model.player.collider.position + push.position,
+                r32(0.2),
+                color,
+                framebuffer,
+            );
+        }
+
         // Hand target
         let hand_target = control.hand_target + model.player.collider.position;
         let color =
@@ -69,7 +96,7 @@ impl Render {
             HAND_TARGET_COLOR
         // }
         ;
-        self.draw_circle(hand_target, r32(0.3), color, framebuffer);
+        self.draw_circle_outline(hand_target, r32(0.3), color, framebuffer);
     }
 
     fn draw_circle(
@@ -83,6 +110,25 @@ impl Render {
             framebuffer,
             &self.camera,
             &draw2d::Ellipse::circle(pos.as_f32(), radius.as_f32(), color),
+        );
+    }
+
+    fn draw_circle_outline(
+        &self,
+        pos: Position,
+        radius: Coord,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            &self.camera,
+            &draw2d::Ellipse::circle_with_cut(
+                pos.as_f32(),
+                radius.as_f32() * 0.75,
+                radius.as_f32(),
+                color,
+            ),
         );
     }
 

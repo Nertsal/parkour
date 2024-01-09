@@ -10,6 +10,9 @@ const GROUND_ACCELERATION: f32 = 30.0;
 const GROUND_DECELERATION: f32 = 50.0;
 const AIR_ACCELERATION: f32 = 5.0;
 
+const HAND_RADIUS: f32 = 0.2;
+const PUSH_STRENGTH: f32 = 20.0;
+
 pub struct Logic<'a> {
     pub model: &'a mut Model,
     pub delta_time: Time,
@@ -38,6 +41,12 @@ impl<'a> Logic<'a> {
         let control = self.player_control.verify(&self.model.player);
         let control = BodyControl::from(control);
         *self.player_control = control;
+
+        if self.player_control.push {
+            self.player_pushing();
+        } else {
+            self.model.player.push_point = None;
+        }
 
         let player = &mut self.model.player;
 
@@ -102,6 +111,57 @@ impl<'a> Logic<'a> {
         //             player.holding_to.unwrap() - hold.normalize_or_zero() * reach;
         //     }
         // }
+    }
+
+    fn player_pushing(&mut self) {
+        let hand_target = self
+            .player_control
+            .hand_target
+            .clamp_len(..=self.model.player.max_reach());
+
+        if self.model.player.push_point.is_none() {
+            self.model.player.push_point = Some(PushPoint {
+                position: hand_target,
+                grabbed: false,
+            });
+        }
+        let last = self.model.player.push_point.as_mut().unwrap();
+
+        if !last.grabbed {
+            last.position = hand_target;
+        }
+
+        let pos = self.model.player.collider.position + last.position;
+        let current = Collider::new_aabb(Aabb2::point(pos).extend_uniform(r32(HAND_RADIUS)));
+
+        // TODO: continuous collision detection
+        let can_grab = self
+            .model
+            .level
+            .surfaces
+            .iter()
+            .any(|s| current.check(&s.collider()));
+
+        if !last.grabbed {
+            if can_grab {
+                // Grab
+                last.grabbed = true;
+            }
+        } else if !can_grab {
+            // Lost grip
+            last.grabbed = false;
+        }
+
+        if last.grabbed {
+            // Push
+            let push_dir = self.player_control.hand_target - last.position;
+            if vec2::dot(push_dir, last.position).as_f32() > 0.0 {
+                // Push, don't pull
+                let push_dir = push_dir.normalize_or_zero();
+                let strength = r32(PUSH_STRENGTH);
+                self.model.player.velocity -= push_dir * strength * self.delta_time;
+            }
+        }
     }
 
     fn gravity(&mut self) {
