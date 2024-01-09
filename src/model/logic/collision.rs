@@ -1,5 +1,4 @@
 use super::*;
-use crate::physics::*;
 
 const GROUND_ANGLE: f32 = 0.5;
 

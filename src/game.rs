@@ -1,5 +1,6 @@
-use super::*;
+use crate::{control::BodyControl, model::*, render::Render, Assets};
 
+use geng::prelude::*;
 use geng_utils::conversions::*;
 
 const CAMERA_INTERPOLATION: f32 = 0.5;
@@ -25,11 +26,12 @@ impl Game {
         geng.window().lock_cursor();
         let level =
             Level::load(run_dir().join("assets").join("new_level.json")).unwrap_or_default();
+        let config = Config::default();
         Self {
             geng: geng.clone(),
             assets: assets.clone(),
             render: Render::new(geng, assets),
-            model: Model::new(level),
+            model: Model::new(config, level),
             player_control: default(),
             cursor_pos: vec2::ZERO,
             toggle_editor: false,

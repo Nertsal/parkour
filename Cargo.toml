@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 geng = "0.17.0"
 geng-utils = "0.3.0"
+parry2d = "0.13.5"
 serde = { version = "1.0.147", features = ["derive"] }

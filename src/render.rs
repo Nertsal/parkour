@@ -1,8 +1,6 @@
-use geng::Camera2d;
+use crate::{control::BodyControl, model::*, Assets};
 
-use super::*;
-
-use physics::*;
+use geng::prelude::*;
 
 const HAND_TARGET_COLOR: Rgba<f32> = Rgba {
     r: 0.7,

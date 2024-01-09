@@ -1,6 +1,6 @@
-use super::*;
+use crate::{model::*, render::Render, Assets};
 
-use crate::physics::Surface;
+use geng::prelude::*;
 
 const AUTOSAVE_PERIOD: f32 = 10.0;
 const SNAP_DISTANCE: f32 = 0.5;
@@ -215,7 +215,10 @@ impl geng::State for Editor {
     fn transition(&mut self) -> Option<geng::state::Transition> {
         self.play.then(|| {
             self.save_level();
-            geng::state::Transition::Switch(Box::new(Game::new(&self.geng, &self.assets)))
+            geng::state::Transition::Switch(Box::new(crate::game::Game::new(
+                &self.geng,
+                &self.assets,
+            )))
         })
     }
 }

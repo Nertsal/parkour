@@ -1,16 +1,8 @@
 mod control;
 mod editor;
 mod game;
-mod logic;
 mod model;
-mod physics;
 mod render;
-
-use control::*;
-use game::*;
-use model::*;
-use physics::*;
-use render::Render;
 
 use geng::prelude::*;
 
@@ -40,7 +32,7 @@ fn main() {
                 .await
                 .expect("Failed to load assets");
         let assets = Rc::new(assets);
-        let state = Game::new(&geng, &assets);
+        let state = game::Game::new(&geng, &assets);
         geng.run_state(state).await;
     });
 }

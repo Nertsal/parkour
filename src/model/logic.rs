@@ -1,6 +1,8 @@
+mod collision;
+
 use super::*;
 
-mod collision;
+use crate::control::BodyControl;
 
 const GRAVITY: vec2<f32> = vec2(0.0, -9.8);
 

@@ -1,5 +1,6 @@
-use super::*;
-use crate::physics::Body;
+use crate::model::{Body, Coord, Position};
+
+use geng::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BodyControl {
