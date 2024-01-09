@@ -1,11 +1,13 @@
 use super::*;
 
+use geng_utils::conversions::*;
+
 const CAMERA_INTERPOLATION: f32 = 0.5;
 
 const MOUSE_SENSITIVITY: f32 = 0.005;
 
-const KEYS_MOVE_RIGHT: [geng::Key; 2] = [geng::Key::D, geng::Key::Right];
-const KEYS_MOVE_LEFT: [geng::Key; 2] = [geng::Key::A, geng::Key::Left];
+const KEYS_MOVE_RIGHT: [geng::Key; 2] = [geng::Key::D, geng::Key::ArrowRight];
+const KEYS_MOVE_LEFT: [geng::Key; 2] = [geng::Key::A, geng::Key::ArrowLeft];
 
 pub struct Game {
     geng: Geng,
@@ -13,22 +15,25 @@ pub struct Game {
     pub render: Render,
     pub model: Model,
     pub player_control: BodyControl,
+    cursor_pos: vec2<f32>,
     toggle_editor: bool,
-    camera_target: Vec2<Coord>,
+    camera_target: vec2<Coord>,
 }
 
 impl Game {
     pub fn new(geng: &Geng, assets: &Rc<Assets>) -> Self {
         geng.window().lock_cursor();
-        let level = Level::load(static_path().join("new_level.json")).unwrap_or_default();
+        let level =
+            Level::load(run_dir().join("assets").join("new_level.json")).unwrap_or_default();
         Self {
             geng: geng.clone(),
             assets: assets.clone(),
             render: Render::new(geng, assets),
             model: Model::new(level),
             player_control: default(),
+            cursor_pos: vec2::ZERO,
             toggle_editor: false,
-            camera_target: Vec2::ZERO,
+            camera_target: vec2::ZERO,
         }
     }
 }
@@ -42,14 +47,13 @@ impl geng::State for Game {
 
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::MouseMove { delta, .. } => {
-                let delta = delta.map(|x| Coord::new(x as f32 * MOUSE_SENSITIVITY));
-                self.player_control.hand_target += delta;
+            geng::Event::CursorMove { position } => {
+                let delta = position.as_f32() - self.cursor_pos;
+                let delta = delta * MOUSE_SENSITIVITY;
+                self.cursor_pos = position.as_f32();
+                self.player_control.hand_target += delta.as_r32();
             }
-            geng::Event::KeyDown { key } => match key {
-                geng::Key::T => self.toggle_editor = true,
-                _ => {}
-            },
+            geng::Event::KeyPress { key: geng::Key::T } => self.toggle_editor = true,
             _ => {}
         }
     }
@@ -85,9 +89,9 @@ impl geng::State for Game {
             (delta * Coord::new(delta_time / CAMERA_INTERPOLATION)).map(Coord::as_f32);
     }
 
-    fn transition(&mut self) -> Option<geng::Transition> {
+    fn transition(&mut self) -> Option<geng::state::Transition> {
         self.toggle_editor.then(|| {
-            geng::Transition::Switch(Box::new(crate::editor::Editor::new(
+            geng::state::Transition::Switch(Box::new(crate::editor::Editor::new(
                 &self.geng,
                 &self.assets,
             )))

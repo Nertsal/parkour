@@ -1,4 +1,4 @@
-use geng::{Camera2d, Draw2d};
+use geng::Camera2d;
 
 use super::*;
 
@@ -37,18 +37,18 @@ const HAND_COLOR: Rgba<f32> = Rgba {
 
 pub struct Render {
     geng: Geng,
-    assets: Rc<Assets>,
+    // assets: Rc<Assets>,
     pub camera: Camera2d,
 }
 
 impl Render {
-    pub fn new(geng: &Geng, assets: &Rc<Assets>) -> Self {
+    pub fn new(geng: &Geng, _assets: &Rc<Assets>) -> Self {
         Self {
             geng: geng.clone(),
-            assets: assets.clone(),
+            // assets: assets.clone(),
             camera: Camera2d {
-                center: Vec2::ZERO,
-                rotation: 0.0,
+                center: vec2::ZERO,
+                rotation: Angle::ZERO,
                 fov: 20.0,
             },
         }
@@ -94,10 +94,10 @@ impl Render {
 
     pub fn draw_level(&self, level: &Level, framebuffer: &mut ugli::Framebuffer) {
         for surface in &level.surfaces {
-            self.geng.draw_2d(
+            self.geng.draw2d().draw2d(
                 framebuffer,
                 &self.camera,
-                &draw_2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
+                &draw2d::Segment::new(surface.segment_f32(), 0.1, Rgba::GRAY),
             );
         }
     }
@@ -109,12 +109,15 @@ impl Render {
         color: Rgba<f32>,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        draw_2d::Ellipse::circle_with_cut(
-            position.map(|x| x.as_f32()),
-            radius.as_f32() * 0.75,
-            radius.as_f32(),
-            color,
-        )
-        .draw_2d(&self.geng, framebuffer, &self.camera);
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            &self.camera,
+            &draw2d::Ellipse::circle_with_cut(
+                position.map(|x| x.as_f32()),
+                radius.as_f32() * 0.75,
+                radius.as_f32(),
+                color,
+            ),
+        );
     }
 }

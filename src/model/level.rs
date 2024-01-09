@@ -2,14 +2,14 @@ use super::*;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Level {
-    pub spawn_point: Vec2<Coord>,
+    pub spawn_point: vec2<Coord>,
     pub surfaces: Vec<Surface>,
 }
 
 impl Level {
     pub fn new() -> Self {
         Self {
-            spawn_point: Vec2::ZERO,
+            spawn_point: vec2::ZERO,
             surfaces: default(),
         }
     }
@@ -22,7 +22,7 @@ impl Level {
                 &self,
             )
             .expect("Failed to serialize the level");
-            info!("Level saved");
+            log::info!("Level saved");
         }
     }
 

@@ -2,7 +2,7 @@ use super::*;
 
 mod collision;
 
-const GRAVITY: Vec2<f32> = vec2(0.0, -9.8);
+const GRAVITY: vec2<f32> = vec2(0.0, -9.8);
 
 const GROUND_ACCELERATION: f32 = 30.0;
 const AIR_ACCELERATION: f32 = 5.0;

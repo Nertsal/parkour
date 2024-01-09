@@ -6,7 +6,7 @@ pub use level::*;
 
 pub type Time = R32;
 pub type Coord = R32;
-pub type Position = Vec2<Coord>;
+pub type Position = vec2<Coord>;
 pub type Mass = R32;
 
 pub struct Model {

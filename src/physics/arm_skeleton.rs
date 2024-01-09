@@ -9,7 +9,7 @@ const MAX_HOLD_FORCE: f32 = 300.0;
 struct PolarPoint {
     pub distance: Coord,
     /// Angle to the positive direction of the x axis.
-    pub angle: Angle,
+    pub angle: Angle<R32>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -20,9 +20,6 @@ struct PolarPhysicsPoint {
     radius: Coord,
     mass: Mass,
 }
-
-#[derive(Debug, Clone, Copy)]
-struct Angle(R32);
 
 #[derive(Debug, Clone)]
 pub struct ArmSkeleton {
@@ -49,12 +46,14 @@ impl ArmSkeleton {
         self.elbow.point.distance + self.hand.point.distance
     }
 
-    pub fn impulse(&self) -> Vec2<Coord> {
-        let (sin, cos) = self.elbow.point.angle.0.sin_cos();
+    pub fn impulse(&self) -> vec2<Coord> {
+        let elbow_dir = self.elbow.point.angle.unit_vec().rotate_90();
         let elbow_speed = self.elbow.velocity * self.elbow.point.distance;
-        let elbow_impulse = vec2(cos, sin).rotate_90() * elbow_speed * self.elbow.mass;
-        let (sin, cos) = (self.elbow.point.angle + self.hand.point.angle).0.sin_cos();
-        let hand_impulse = vec2(cos, sin).rotate_90()
+        let elbow_impulse = elbow_dir * elbow_speed * self.elbow.mass;
+        let hand_dir = (self.elbow.point.angle + self.hand.point.angle)
+            .unit_vec()
+            .rotate_90();
+        let hand_impulse = hand_dir
             * (elbow_speed + self.hand.velocity * self.hand.point.distance)
             * self.hand.mass;
         elbow_impulse + hand_impulse
@@ -79,26 +78,27 @@ impl ArmSkeleton {
     /// and whether the hold is broken.
     pub fn control(
         &mut self,
-        target: Vec2<Coord>,
-        hold: Option<Vec2<Coord>>,
-        body_impulse: Vec2<Coord>,
+        target: vec2<Coord>,
+        hold: Option<vec2<Coord>>,
+        body_impulse: vec2<Coord>,
         delta_time: Time,
-    ) -> (Vec2<Coord>, bool) {
+    ) -> (vec2<Coord>, bool) {
         let [elbow_target, hand_target] = match self.solve_angles(hold.unwrap_or(target)) {
             Some(v) => v,
-            None => return (Vec2::ZERO, false),
+            None => return (vec2::ZERO, false),
         };
 
-        let mut total_impulse = Vec2::ZERO;
+        let mut total_impulse = vec2::ZERO;
         if hold.is_some() {
-            self.elbow.point.angle = Angle::new(elbow_target);
-            self.hand.point.angle = Angle::new(hand_target);
+            self.elbow.point.angle = elbow_target;
+            self.hand.point.angle = hand_target;
         } else {
             // Calculate target velocity
-            let elbow_target = (self.elbow.point.angle.delta_to(Angle::new(elbow_target))
-                * r32(5.0))
-            .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
-            let hand_target = (self.hand.point.angle.delta_to(Angle::new(hand_target)) * r32(5.0))
+            let elbow_target = (self.elbow.point.angle.angle_to(elbow_target) * r32(5.0))
+                .as_radians()
+                .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
+            let hand_target = (self.hand.point.angle.angle_to(hand_target) * r32(5.0))
+                .as_radians()
                 .clamp_abs(r32(MAX_ANGULAR_VELOCITY));
 
             // Accelerate towards target velocity
@@ -110,14 +110,16 @@ impl ArmSkeleton {
             self.hand.velocity += hand_acc;
 
             // Calculate impulses
-            let (sin, cos) = self.elbow.point.angle.0.sin_cos();
-            let elbow_impulse = vec2(cos, sin).rotate_90() * elbow_acc * self.elbow.mass;
-            let (sin, cos) = (self.elbow.point.angle + self.hand.point.angle).0.sin_cos();
-            let hand_impulse = vec2(cos, sin).rotate_90() * hand_acc * self.hand.mass;
+            let elbow_dir = self.elbow.point.angle.unit_vec().rotate_90();
+            let elbow_impulse = elbow_dir * elbow_acc * self.elbow.mass;
+            let hand_dir = (self.elbow.point.angle + self.hand.point.angle)
+                .unit_vec()
+                .rotate_90();
+            let hand_impulse = hand_dir * hand_acc * self.hand.mass;
 
             // Move with accordance to the velocity
-            self.elbow.point.angle += self.elbow.velocity * delta_time;
-            self.hand.point.angle += self.hand.velocity * delta_time;
+            self.elbow.point.angle += Angle::from_radians(self.elbow.velocity * delta_time);
+            self.hand.point.angle += Angle::from_radians(self.hand.velocity * delta_time);
 
             total_impulse += (elbow_impulse + hand_impulse) * r32(1.0);
         }
@@ -128,7 +130,7 @@ impl ArmSkeleton {
             let mut force_left = Coord::new(MAX_HOLD_FORCE);
             if hold.len() > self.max_reach() {
                 let normal = hold.normalize_or_zero();
-                let impulse = Vec2::dot(-body_impulse, normal);
+                let impulse = vec2::dot(-body_impulse, normal);
                 if impulse > Coord::ZERO {
                     // Add the force required to hold on
                     force_left -= impulse;
@@ -150,7 +152,7 @@ impl ArmSkeleton {
         (total_impulse, release)
     }
 
-    fn solve_angles(&self, mut target: Vec2<Coord>) -> Option<[R32; 2]> {
+    fn solve_angles(&self, mut target: vec2<Coord>) -> Option<[Angle<R32>; 2]> {
         // Make sure the target is within reach
         let mut len = target.len();
         let elbow = self.elbow.point.distance;
@@ -169,34 +171,35 @@ impl ArmSkeleton {
         }
 
         // Find the target angles
-        let hand_target = R32::PI
-            - r32(
-                ((elbow.sqr() + hand.sqr() - len.sqr()) / (r32(2.0) * elbow * hand))
-                    .as_f32()
-                    .clamp_abs(1.0)
-                    .acos(),
-            );
-        let elbow_target = Angle::new(r32(((len.sqr() + elbow.sqr() - hand.sqr())
+        let hand_target = Angle::from_radians(
+            R32::PI
+                - r32(
+                    ((elbow.sqr() + hand.sqr() - len.sqr()) / (r32(2.0) * elbow * hand))
+                        .as_f32()
+                        .clamp_abs(1.0)
+                        .acos(),
+                ),
+        );
+        let elbow_target = Angle::from_radians(r32(((len.sqr() + elbow.sqr() - hand.sqr())
             / (r32(2.0) * elbow * len))
             .as_f32()
             .clamp_abs(1.0)
             .acos()))
-        .delta_to(Angle::new(target.arg()));
+        .angle_to(target.arg());
 
         Some([elbow_target, hand_target])
     }
 }
 
 impl PolarPoint {
-    pub fn to_cartesian(self) -> Vec2<Coord> {
-        let (sin, cos) = self.angle.0.sin_cos();
-        vec2(cos, sin) * self.distance
+    pub fn to_cartesian(self) -> vec2<Coord> {
+        self.angle.unit_vec() * self.distance
     }
 
-    pub fn from_cartesian(pos: Vec2<Coord>) -> Self {
+    pub fn from_cartesian(pos: vec2<Coord>) -> Self {
         Self {
             distance: pos.len(),
-            angle: Angle::new(pos.arg()),
+            angle: pos.arg(),
         }
     }
 }
@@ -220,56 +223,5 @@ impl From<PhysicsPoint> for PolarPhysicsPoint {
             radius: point.radius,
             mass: point.mass,
         }
-    }
-}
-
-impl Angle {
-    pub fn new(mut angle: R32) -> Self {
-        let pi2 = R32::PI * r32(2.0);
-        while angle < R32::ZERO {
-            angle += pi2;
-        }
-        while angle > pi2 {
-            angle -= pi2;
-        }
-        Self(angle)
-    }
-
-    pub fn delta_to(self, other: Self) -> R32 {
-        let mut angle = other.0 - self.0;
-        if angle > R32::PI {
-            angle -= R32::PI * r32(2.0);
-        } else if angle < -R32::PI {
-            angle += R32::PI * r32(2.0);
-        }
-        angle
-    }
-}
-
-impl std::ops::Add<Self> for Angle {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self::new(self.0 + rhs.0)
-    }
-}
-
-impl std::ops::AddAssign<Self> for Angle {
-    fn add_assign(&mut self, rhs: Self) {
-        *self = Self::new(self.0 + rhs.0);
-    }
-}
-
-impl std::ops::Add<R32> for Angle {
-    type Output = Self;
-
-    fn add(self, rhs: R32) -> Self::Output {
-        Self::new(self.0 + rhs)
-    }
-}
-
-impl std::ops::AddAssign<R32> for Angle {
-    fn add_assign(&mut self, rhs: R32) {
-        *self = Self::new(self.0 + rhs);
     }
 }

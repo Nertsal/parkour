@@ -24,7 +24,7 @@ pub struct BodyMovementState {
 pub struct BodyMovementInfo {
     positive_time: Time,
     negative_time: Time,
-    pos_bounds: AABB<Coord>,
+    pos_bounds: Aabb2<Coord>,
     hand: Position,
 }
 
@@ -51,13 +51,13 @@ impl BodyMovementHistory {
         let mut info = BodyMovementInfo {
             positive_time: Time::ZERO,
             negative_time: Time::ZERO,
-            pos_bounds: AABB::ZERO,
+            pos_bounds: Aabb2::ZERO,
             hand: Position::ZERO,
         };
         let mut states = self.states.iter();
         if let Some(state) = states.next() {
             let mut last_time = state.time;
-            info.pos_bounds = AABB::point(state.hand);
+            info.pos_bounds = Aabb2::point(state.hand);
             for state in std::iter::once(state).chain(states) {
                 let positive = state.hand.x >= Coord::ZERO;
                 let time_record = if positive {
@@ -68,10 +68,10 @@ impl BodyMovementHistory {
                 *time_record += state.time - last_time;
                 last_time = state.time;
                 info.hand = state.hand;
-                info.pos_bounds.x_min = info.pos_bounds.x_min.min(state.hand.x);
-                info.pos_bounds.x_max = info.pos_bounds.x_max.max(state.hand.x);
-                info.pos_bounds.y_min = info.pos_bounds.y_min.min(state.hand.y);
-                info.pos_bounds.y_max = info.pos_bounds.y_max.max(state.hand.y);
+                info.pos_bounds.min.x = info.pos_bounds.min.x.min(state.hand.x);
+                info.pos_bounds.max.x = info.pos_bounds.max.x.max(state.hand.x);
+                info.pos_bounds.min.y = info.pos_bounds.min.y.min(state.hand.y);
+                info.pos_bounds.max.y = info.pos_bounds.max.y.max(state.hand.y);
             }
         }
         info

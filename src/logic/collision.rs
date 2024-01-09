@@ -11,7 +11,7 @@ impl Logic<'_> {
 
 #[derive(Debug, Clone, Copy)]
 struct Collision {
-    pub normal: Vec2<Coord>,
+    pub normal: vec2<Coord>,
     pub penetration: Coord,
 }
 
@@ -38,7 +38,7 @@ impl Body {
         surfaces.into_iter().filter_map(|surface| {
             let delta = surface.delta_to(self.center.position);
             let penetration = self.center.radius - delta.len();
-            (penetration > Coord::ZERO && Vec2::dot(delta, self.center.velocity) > Coord::ZERO)
+            (penetration > Coord::ZERO && vec2::dot(delta, self.center.velocity) > Coord::ZERO)
                 .then(|| Collision {
                     normal: -delta.normalize_or_zero(),
                     penetration,
@@ -48,11 +48,12 @@ impl Body {
 
     fn resolve_collision(&mut self, collision: Collision) {
         self.center.position += collision.normal * collision.penetration;
-        let normal_vel = Vec2::dot(self.center.velocity, collision.normal);
+        let normal_vel = vec2::dot(self.center.velocity, collision.normal);
         self.center.velocity -= collision.normal * normal_vel;
 
         // Check for grounded
-        let angle = collision.normal.arg() - R32::PI / r32(2.0);
-        self.ground_normal = (angle.abs().as_f32() < GROUND_ANGLE).then_some(collision.normal);
+        let angle = collision.normal.arg() - Angle::from_degrees(r32(90.0));
+        self.ground_normal =
+            (angle.as_radians().abs().as_f32() < GROUND_ANGLE).then_some(collision.normal);
     }
 }

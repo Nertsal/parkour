@@ -14,14 +14,14 @@ pub use surface::*;
 pub struct PhysicsPoint {
     pub position: Position,
     pub radius: Coord,
-    pub velocity: Vec2<Coord>,
+    pub velocity: vec2<Coord>,
     pub mass: Mass,
 }
 
 impl PhysicsPoint {
     pub fn new(position: Position, radius: Coord, mass: Mass) -> Self {
         Self {
-            velocity: Vec2::ZERO,
+            velocity: vec2::ZERO,
             position,
             radius,
             mass,
@@ -40,7 +40,7 @@ impl PhysicsPoint {
         }
     }
 
-    pub fn impulse(&self) -> Vec2<Coord> {
+    pub fn impulse(&self) -> vec2<Coord> {
         self.velocity * self.mass
     }
 }
